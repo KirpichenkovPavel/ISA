@@ -1,6 +1,6 @@
 package ru.spbpu.user;
 
-public abstract class AbstractUser implements UserInterface {
+public abstract class AbstractUser implements User {
     private String name;
 
     AbstractUser(String name) {

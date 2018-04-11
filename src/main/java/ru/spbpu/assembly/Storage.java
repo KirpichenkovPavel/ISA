@@ -1,6 +1,7 @@
 package ru.spbpu.assembly;
 
 import ru.spbpu.exceptions.StorageException;
+import ru.spbpu.repository.StorageAccessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,8 +9,18 @@ import java.util.Map;
 public class Storage {
     private Map<Component, Item> components;
 
-    public Storage() {
+    private Storage() {
         components = new HashMap<Component, Item>();
+    }
+
+    public Storage loadStorage(StorageAccessor dataLayerStorageAccessor) {
+        Storage newStorage = new Storage();
+        newStorage.components = dataLayerStorageAccessor.getComponents();
+        return newStorage;
+    }
+
+    public void saveStorageChanges(StorageAccessor dataLayerStorageAccessor) {
+        dataLayerStorageAccessor.saveStorage(this.components);
     }
 
     public void addItem(Item newItem) {

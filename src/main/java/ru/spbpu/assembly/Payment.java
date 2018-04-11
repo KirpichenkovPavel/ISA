@@ -1,12 +1,12 @@
 package ru.spbpu.assembly;
 
-import ru.spbpu.user.UserInterface;
+import ru.spbpu.user.User;
 
 public class Payment {
 
     private int id;
-    private UserInterface from;
-    private UserInterface to;
+    private User from;
+    private User to;
     private int amount;
     private PaymentStatus status;
 
@@ -17,7 +17,7 @@ public class Payment {
         CANCELED
     }
 
-    public Payment(UserInterface from, UserInterface to, int amount) {
+    public Payment(User from, User to, int amount) {
         this.from = from;
         this.to = to;
         this.amount = amount;
@@ -40,11 +40,11 @@ public class Payment {
         return status;
     }
 
-    public UserInterface getSourceUser() {
+    public User getSourceUser() {
         return from;
     }
 
-    public UserInterface getTargetUser() {
+    public User getTargetUser() {
         return to;
     }
 

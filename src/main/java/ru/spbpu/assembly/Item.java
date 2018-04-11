@@ -5,13 +5,13 @@ public class Item {
     private int price;
     private int amount;
 
-    Item(Component component, int price, int amount) {
+    public Item(Component component, int price, int amount) {
         this.amount = amount;
         this.component = component;
         this.price = price;
     }
     
-    Item(Component component, int amount){
+    public Item(Component component, int amount){
         this.amount = amount;
         this.component = component;
         this.price = 0;
