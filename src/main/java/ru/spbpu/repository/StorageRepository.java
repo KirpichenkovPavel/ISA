@@ -2,6 +2,7 @@ package ru.spbpu.repository;
 
 import ru.spbpu.assembly.Component;
 import ru.spbpu.assembly.Item;
+import ru.spbpu.assembly.Storage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,4 +37,13 @@ public class StorageRepository extends AbstractRepository implements StorageAcce
         this.components = new HashMap<>(components);
     }
 
+    @Override
+    public Storage getById(int id) {
+        return (Storage)super.getById(id);
+    }
+
+    @Override
+    public List<Storage> getAll() {
+        return (List<Storage>) super.getAll();
+    }
 }

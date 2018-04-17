@@ -6,13 +6,13 @@ import ru.spbpu.assembly.Item;
 import java.util.List;
 import java.util.Map;
 
-public interface StorageAccessor {
+public interface StorageAccessor extends Accessor {
 
-    public void addItem(String name, int amount, int price, ComponentRepository cRep);
+    void addItem(String name, int amount, int price, ComponentRepository cRep);
 
-    public Map<Component, Item> getComponents();
+    Map<Component, Item> getComponents();
 
-    public List<Item> getItems();
+    List<Item> getItems();
 
-    public void saveStorage(Map<Component, Item> components);
+    void saveStorage(Map<Component, Item> components);
 }

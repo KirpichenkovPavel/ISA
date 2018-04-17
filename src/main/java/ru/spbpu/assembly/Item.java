@@ -1,11 +1,15 @@
 package ru.spbpu.assembly;
 
-public class Item {
+import ru.spbpu.repository.Accessor;
+import ru.spbpu.repository.AbstractStorableObject;
+import ru.spbpu.repository.ItemRepository;
+
+public class Item extends AbstractStorableObject{
     private Component component;
     private int price;
     private int amount;
 
-    public Item(Component component, int price, int amount) {
+    public Item(Component component, int amount, int price) {
         this.amount = amount;
         this.component = component;
         this.price = price;
@@ -35,5 +39,10 @@ public class Item {
 
     public void setPrice(int price) {
         this.price = price;
+    }
+
+    @Override
+    protected Accessor getAccessor() {
+        return new ItemRepository();
     }
 }

@@ -1,8 +1,11 @@
 package ru.spbpu.assembly;
 
+import ru.spbpu.repository.Accessor;
+import ru.spbpu.repository.AbstractStorableObject;
+import ru.spbpu.repository.ItemRepository;
 import ru.spbpu.user.User;
 
-public class Payment {
+public class Payment extends AbstractStorableObject{
 
     private int id;
     private User from;
@@ -46,6 +49,11 @@ public class Payment {
 
     public User getTargetUser() {
         return to;
+    }
+
+    @Override
+    protected Accessor getAccessor() {
+        return new ItemRepository();
     }
 
     public int getId() {
