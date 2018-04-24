@@ -1,11 +1,13 @@
-package ru.spbpu.repository;
+package ru.spbpu.data;
 
-import ru.spbpu.assembly.Order;
-import ru.spbpu.user.User;
+import ru.spbpu.logic.Order;
+import ru.spbpu.logic.Entity;
+import ru.spbpu.logic.OrderAccessor;
+import ru.spbpu.logic.User;
 
 import java.util.List;
 
-public class OrderRepository implements OrderAccessor {
+public class OrderRepository extends AbstractRepository implements OrderAccessor {
 
     @Override
     public Order getOrder(int id) {
@@ -38,17 +40,17 @@ public class OrderRepository implements OrderAccessor {
     }
 
     @Override
-    public List<AbstractStorableObject> getAll() {
+    public List<Entity> getAll() {
         return null;
     }
 
     @Override
-    public void saveObject(AbstractStorableObject object) {
+    public void saveObject(Entity object) {
 
     }
 
     @Override
-    public void updateObject(AbstractStorableObject object) {
+    public void updateObject(Entity object) {
 
     }
 }

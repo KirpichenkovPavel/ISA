@@ -1,9 +1,9 @@
-package ru.spbpu.user;
+package ru.spbpu.logic;
 
 public class Provider extends AbstractUser implements User {
 
-    public Provider(String name) {
-        super(name);
+    Provider(String name, AccessorRegistry registry) {
+        super(name, registry);
     }
 
     @Override

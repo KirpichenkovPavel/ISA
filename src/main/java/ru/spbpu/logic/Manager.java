@@ -1,14 +1,11 @@
-package ru.spbpu.user;
+package ru.spbpu.logic;
 
-import ru.spbpu.assembly.Order;
-import ru.spbpu.assembly.Payment;
-import ru.spbpu.assembly.Storage;
 import ru.spbpu.exceptions.ApplicationException;
 
 public class Manager extends AbstractUser implements User {
 
-    public Manager(String name){
-        super(name);
+    Manager(String name, AccessorRegistry registry ){
+        super(name, registry);
     }
 
     @Override

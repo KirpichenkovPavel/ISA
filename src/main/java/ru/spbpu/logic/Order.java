@@ -1,15 +1,13 @@
-package ru.spbpu.assembly;
+package ru.spbpu.logic;
 
+import ru.spbpu.data.OrderRepository;
 import ru.spbpu.exceptions.ApplicationException;
-import ru.spbpu.repository.*;
-import ru.spbpu.user.Client;
-import ru.spbpu.user.Manager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Order extends AbstractStorableObject {
+public class Order extends Entity {
 
     public enum OrderStatus {
         NEW,
@@ -27,22 +25,30 @@ public class Order extends AbstractStorableObject {
     private List<Item> items;
     private Payment payment;
 
-    public Order(Client _client) {
-        super();
+    Order(Client _client, AccessorRegistry registry) {
+        super(registry);
         this.client = _client;
         this.status = OrderStatus.NEW;
+        this.items = new ArrayList<>();
+    }
+
+    @Override
+    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
+        return AccessorRegistry.RegistryKey.ORDER;
     }
 
     public void setStatus(OrderStatus newStatus) {
         this.status = newStatus;
     }
 
+
+
     public int getId() {return id;}
     public Client getClient() {return client;}
     public OrderStatus getStatus() {return status;}
 
     public Item addItem(Component component, int amount) throws ApplicationException {
-        Item newItem = new Item(component, amount);
+        Item newItem = this.getRegistry().newItem(component, amount);
         items.add(newItem);
         return newItem;
     }
@@ -68,7 +74,7 @@ public class Order extends AbstractStorableObject {
         List<Item> itemsWithPrice = new ArrayList<>();
         for (Item itemInOrder: items) {
             Component component = itemInOrder.getComponent();
-            itemsWithPrice.add(new Item(component, itemInOrder.getAmount(), storage.componentPrice(component)));
+            itemsWithPrice.add(this.getRegistry().newItem(component, itemInOrder.getAmount(), storage.componentPrice(component)));
         }
         items = itemsWithPrice;
         setStatus(OrderStatus.SUBMITTED);
@@ -105,7 +111,7 @@ public class Order extends AbstractStorableObject {
     public Payment addPayment(Manager manager) throws ApplicationException{
         if (!(getStatus() == OrderStatus.ACCEPTED))
             throw new ApplicationException();
-        payment = new Payment(client, manager, totalPrice());
+        payment = getRegistry().newPayment(client, manager, totalPrice());
         return payment;
     }
 
@@ -121,9 +127,8 @@ public class Order extends AbstractStorableObject {
         status = OrderStatus.CLOSED;
     }
 
-    @Override
-    protected Accessor getAccessor() {
-        return new OrderRepository();
+    public List<Item> getItems() {
+        return items;
     }
 }
 

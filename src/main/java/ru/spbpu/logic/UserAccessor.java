@@ -1,10 +1,8 @@
-package ru.spbpu.repository;
-
-import ru.spbpu.user.User;
+package ru.spbpu.logic;
 
 import java.util.List;
 
-public interface UserAccessor {
+public interface UserAccessor extends Accessor{
 
     public User getUser(String name, User.Role role);
 

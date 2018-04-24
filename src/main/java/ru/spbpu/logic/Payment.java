@@ -1,11 +1,8 @@
-package ru.spbpu.assembly;
+package ru.spbpu.logic;
 
-import ru.spbpu.repository.Accessor;
-import ru.spbpu.repository.AbstractStorableObject;
-import ru.spbpu.repository.ItemRepository;
-import ru.spbpu.user.User;
+import ru.spbpu.data.ItemRepository;
 
-public class Payment extends AbstractStorableObject{
+public class Payment extends Entity {
 
     private int id;
     private User from;
@@ -20,11 +17,17 @@ public class Payment extends AbstractStorableObject{
         CANCELED
     }
 
-    public Payment(User from, User to, int amount) {
+    Payment(User from, User to, int amount, AccessorRegistry registry) {
+        super(registry);
         this.from = from;
         this.to = to;
         this.amount = amount;
         this.status = PaymentStatus.OPEN;
+    }
+
+    @Override
+    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
+        return AccessorRegistry.RegistryKey.PAYMENT;
     }
 
     public void setPaid() {
@@ -51,10 +54,6 @@ public class Payment extends AbstractStorableObject{
         return to;
     }
 
-    @Override
-    protected Accessor getAccessor() {
-        return new ItemRepository();
-    }
 
     public int getId() {
         return id;

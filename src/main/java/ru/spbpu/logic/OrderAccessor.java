@@ -1,7 +1,4 @@
-package ru.spbpu.repository;
-
-import ru.spbpu.assembly.Order;
-import ru.spbpu.user.User;
+package ru.spbpu.logic;
 
 import java.util.List;
 

@@ -1,34 +1,23 @@
-package ru.spbpu.assembly;
+package ru.spbpu.logic;
 
 import ru.spbpu.exceptions.ApplicationException;
-import ru.spbpu.repository.Accessor;
-import ru.spbpu.repository.AbstractStorableObject;
-import ru.spbpu.repository.StorageAccessor;
-import ru.spbpu.repository.StorageRepository;
+import ru.spbpu.data.StorageRepository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-public class Storage extends AbstractStorableObject {
+public class Storage extends Entity {
     private Map<Component, Item> components;
 
-    private Storage() {
-        components = new HashMap<Component, Item>();
+    Storage(AccessorRegistry registry) {
+        super(registry);
+        components = new HashMap<>();
     }
 
     @Override
-    protected Accessor getAccessor() {
-        return new StorageRepository();
-    }
-
-    public Storage loadStorage(StorageAccessor dataLayerStorageAccessor) {
-        Storage newStorage = new Storage();
-        newStorage.components = dataLayerStorageAccessor.getComponents();
-        return newStorage;
-    }
-
-    public void saveStorageChanges(StorageAccessor dataLayerStorageAccessor) {
-        dataLayerStorageAccessor.saveStorage(this.components);
+    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
+        return AccessorRegistry.RegistryKey.STORAGE;
     }
 
     public void addItem(Item newItem) {
@@ -61,7 +50,6 @@ public class Storage extends AbstractStorableObject {
             throw new ApplicationException();
         }
         components.get(component).setAmount(reserve - amount);
-//        return new Item(component, components.get(component).getPrice(), amount);
     }
 
     public void setPrice(Component component, int newPrice) {
@@ -69,7 +57,7 @@ public class Storage extends AbstractStorableObject {
             components.get(component).setPrice(newPrice);
         }
         else {
-            components.put(component, new Item(component, newPrice, 0));
+            components.put(component, this.getRegistry().newItem(component, newPrice, 0));
         }
     }
 

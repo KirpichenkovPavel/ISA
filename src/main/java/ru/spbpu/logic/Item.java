@@ -1,21 +1,23 @@
-package ru.spbpu.assembly;
+package ru.spbpu.logic;
 
-import ru.spbpu.repository.Accessor;
-import ru.spbpu.repository.AbstractStorableObject;
-import ru.spbpu.repository.ItemRepository;
+import ru.spbpu.logic.AccessorRegistry;
+import ru.spbpu.logic.Component;
+import ru.spbpu.logic.Entity;
 
-public class Item extends AbstractStorableObject{
+public class Item extends Entity {
     private Component component;
     private int price;
     private int amount;
 
-    public Item(Component component, int amount, int price) {
+    Item(Component component, int amount, int price, AccessorRegistry registry) {
+        super(registry);
         this.amount = amount;
         this.component = component;
         this.price = price;
     }
     
-    public Item(Component component, int amount){
+    Item(Component component, int amount, AccessorRegistry registry){
+        super(registry);
         this.amount = amount;
         this.component = component;
         this.price = 0;
@@ -42,7 +44,7 @@ public class Item extends AbstractStorableObject{
     }
 
     @Override
-    protected Accessor getAccessor() {
-        return new ItemRepository();
+    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
+        return AccessorRegistry.RegistryKey.ITEM;
     }
 }

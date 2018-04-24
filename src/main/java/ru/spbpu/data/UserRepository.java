@@ -1,11 +1,8 @@
-package ru.spbpu.repository;
+package ru.spbpu.data;
 
-import ru.spbpu.user.Client;
-import ru.spbpu.user.Manager;
-import ru.spbpu.user.Provider;
-import ru.spbpu.user.User;
+import ru.spbpu.logic.UserAccessor;
+import ru.spbpu.logic.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserRepository extends AbstractRepository implements UserAccessor {

@@ -1,15 +1,11 @@
-package ru.spbpu.user;
+package ru.spbpu.logic;
 
-import ru.spbpu.assembly.Component;
-import ru.spbpu.assembly.Item;
-import ru.spbpu.assembly.Order;
-import ru.spbpu.assembly.Storage;
 import ru.spbpu.exceptions.ApplicationException;
 
 public class Client extends AbstractUser implements User {
 
-    public Client(String name) {
-        super(name);
+    Client(String name, AccessorRegistry registry) {
+        super(name, registry);
     }
 
     @Override
@@ -17,9 +13,10 @@ public class Client extends AbstractUser implements User {
         return Role.CLIENT;
     }
 
-    public void makeOrder() {
-        Order newOrder = new Order(this);
+    public Order makeOrder() {
+        Order newOrder = this.getRegistry().newOrder(this);
         newOrder.create();
+        return newOrder;
     }
 
     public void submitOrder(Order order, Storage storage) throws ApplicationException {
