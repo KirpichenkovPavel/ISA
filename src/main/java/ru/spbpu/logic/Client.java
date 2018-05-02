@@ -1,6 +1,9 @@
 package ru.spbpu.logic;
 
 import ru.spbpu.exceptions.ApplicationException;
+import ru.spbpu.exceptions.ApplicationException.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Client extends AbstractUser implements User {
 
@@ -13,22 +16,32 @@ public class Client extends AbstractUser implements User {
         return Role.CLIENT;
     }
 
-    public Order makeOrder() {
-        Order newOrder = this.getRegistry().newOrder(this);
+    public ClientOrder makeOrder() {
+        ClientOrder newOrder = this.getRegistry().newOrder(this);
         newOrder.create();
         return newOrder;
     }
 
-    public void submitOrder(Order order, Storage storage) throws ApplicationException {
-        if (order.canBeSubmitted(storage)) {
-            order.submit(storage);
+    public void submitOrder(ClientOrder order) throws ApplicationException {
+        if (order.canBeSubmitted()) {
+            Storage storage = getRegistry().getStorage();
+            List<Item> itemsWithPrice = new ArrayList<>();
+            for (Item itemInOrder: order.getItems()) {
+                Component component = itemInOrder.getComponent();
+                Item newItem = getRegistry().newItem(component, itemInOrder.getAmount(), storage.componentPrice(component));
+                newItem.create();
+                itemsWithPrice.add(newItem);
+            }
+            order.setItems(itemsWithPrice);
+            order.setStatus(Order.OrderStatus.SUBMITTED);
             order.update();
         }
     }
 
-    public void addItemToOrder(Component component, Order order, int amount) throws ApplicationException{
-        Item newItem = order.addItem(component, amount);
+    public void addItemToOrder(ClientOrder order, Component component, int amount) throws ApplicationException{
+        Item newItem = this.getRegistry().newItem(component, amount);
         newItem.create();
+        order.addItem(newItem);
         order.update();
     }
 
@@ -37,10 +50,45 @@ public class Client extends AbstractUser implements User {
         order.update();
     }
 
-    public void markOrderAsDone(Order order) throws ApplicationException {
-        order.close();
+    public void closeCompleteOrder(ClientOrder order) throws ApplicationException {
+        if (!order.canBeClosed())
+            throw new ApplicationException("Order can't be closed", Type.ORDER_STATUS);
+        order.setStatus(Order.OrderStatus.CLOSED);
+        order.getPayment().close();
+        order.getPayment().update();
         order.update();
     }
 
+    public void payForOrder(ClientOrder order) throws ApplicationException{
+        if (order.getStatus() != Order.OrderStatus.ACCEPTED)
+            throw new ApplicationException("Wrong order status");
+        Payment payment = order.getPayment();
+        if (payment == null)
+            throw new ApplicationException("No payment in order");
+        payment.setPaid();
+        order.setStatus(Order.OrderStatus.PAID);
+        payment.update();
+        order.update();
+    }
 
+    public void cancelOrder (ClientOrder order) throws ApplicationException {
+        switch (order.getStatus()) {
+            case NEW:
+            case SUBMITTED:
+                order.setStatus(Order.OrderStatus.CANCELED);
+                break;
+            case ACCEPTED:
+                order.returnItemsToStorage();
+                order.setStatus(Order.OrderStatus.CANCELED);
+                break;
+            case PAID:
+            case DONE:
+                order.cancelPayment();
+                order.returnItemsToStorage();
+                order.setStatus(Order.OrderStatus.CANCELED);
+                break;
+            default:
+                throw new ApplicationException("Can't cancel order in current status", ApplicationException.Type.ORDER_STATUS);
+        }
+    }
 }

@@ -18,7 +18,8 @@ public class AccessorRegistry {
         PAYMENT,
     }
 
-    public AccessorRegistry(ItemAccessor ia, ComponentAccessor ca, UserAccessor ua, StorageAccessor sa, OrderAccessor oa, PaymentAccessor pa) {
+    public AccessorRegistry(ItemAccessor ia, ComponentAccessor ca, UserAccessor ua, StorageAccessor sa,
+                            OrderAccessor oa, PaymentAccessor pa) {
         registry = new HashMap<>();
         registry.put(RegistryKey.ITEM, ia);
         registry.put(RegistryKey.COMPONENT, ca);
@@ -40,8 +41,12 @@ public class AccessorRegistry {
         return newItem(component, amount, 0);
     }
 
-    public Order newOrder(Client client) {
-        return new Order(client, this);
+    public ClientOrder newOrder(Client from) {
+        return new ClientOrder(from,this);
+    }
+
+    public WholesaleOrder newWholesaleOrder(Manager from, Provider to) {
+        return new WholesaleOrder(from, to, this);
     }
 
     public Payment newPayment(User from, User to, int amount) {
@@ -65,7 +70,7 @@ public class AccessorRegistry {
         return new Component(name, this);
     }
 
-    public Storage newStorage() {
-        return new Storage(this);
+    public Storage getStorage() {
+        return Storage.getInstance(this);
     }
 }

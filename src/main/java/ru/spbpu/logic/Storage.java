@@ -1,18 +1,24 @@
 package ru.spbpu.logic;
 
 import ru.spbpu.exceptions.ApplicationException;
-import ru.spbpu.data.StorageRepository;
+import ru.spbpu.exceptions.ApplicationException.Type;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class Storage extends Entity {
     private Map<Component, Item> components;
+    private static Storage instance;
 
-    Storage(AccessorRegistry registry) {
+    private Storage(AccessorRegistry registry) {
         super(registry);
         components = new HashMap<>();
+    }
+
+    static Storage getInstance(AccessorRegistry registry) {
+        if (instance == null)
+            instance = new Storage(registry);
+        return instance;
     }
 
     @Override
@@ -40,14 +46,14 @@ public class Storage extends Entity {
 
     public int componentPrice(Component component) throws ApplicationException {
         if (!componentExists(component))
-            throw new ApplicationException();
+            throw new ApplicationException("Component does not exist", Type.STORAGE);
         return components.get(component).getPrice();
     }
 
     public void takeComponents(Component component, int amount) throws ApplicationException {
         int reserve = componentAmount(component);
         if (reserve < amount){
-            throw new ApplicationException();
+            throw new ApplicationException("Not enough components in storage", Type.STORAGE);
         }
         components.get(component).setAmount(reserve - amount);
     }
@@ -63,7 +69,7 @@ public class Storage extends Entity {
 
     public void removeFromStorage(Component component) throws ApplicationException {
         if (!components.containsKey(component)){
-            throw new ApplicationException();
+            throw new ApplicationException("Component does not exist", Type.STORAGE);
         }
         components.remove(component);
     }

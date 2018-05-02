@@ -26,9 +26,4 @@ public class Component extends Entity {
         return another.getName().equals(this.name);
     }
 
-    public Optional<Component> getByName(String name) {
-        ComponentAccessor accessor = (ComponentAccessor) getAccessor();
-        return accessor.getByName(name);
-    }
-
 }

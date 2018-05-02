@@ -1,9 +1,5 @@
 package ru.spbpu.logic;
 
-import ru.spbpu.logic.AccessorRegistry;
-import ru.spbpu.logic.Component;
-import ru.spbpu.logic.Entity;
-
 public class Item extends Entity {
     private Component component;
     private int price;
