@@ -18,8 +18,10 @@ public class AccessorRegistry {
         PAYMENT,
     }
 
-    public AccessorRegistry(ItemAccessor ia, ComponentAccessor ca, UserAccessor ua, StorageAccessor sa,
-                            OrderAccessor oa, PaymentAccessor pa) {
+    public AccessorRegistry(){}
+
+    public void setUp(ItemAccessor ia, ComponentAccessor ca, UserAccessor ua, StorageAccessor sa,
+                      OrderAccessor oa, PaymentAccessor pa) {
         registry = new HashMap<>();
         registry.put(RegistryKey.ITEM, ia);
         registry.put(RegistryKey.COMPONENT, ca);

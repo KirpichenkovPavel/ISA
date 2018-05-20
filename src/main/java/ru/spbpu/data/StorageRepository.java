@@ -1,5 +1,6 @@
 package ru.spbpu.data;
 
+import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Storage;
 import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.StorageAccessor;
@@ -18,6 +19,11 @@ public class StorageRepository extends AbstractRepository implements StorageAcce
             return storageList.get(0);
         else
             throw new ApplicationException();
+    }
+
+    @Override
+    public AccessorRegistry getRegistry() {
+        return null;
     }
 
 //    private Map<Component, Item> components;

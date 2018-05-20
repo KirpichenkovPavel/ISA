@@ -7,7 +7,8 @@ public class ApplicationException extends Exception {
     public enum Type {
         DEFAULT,
         ORDER_STATUS,
-        STORAGE
+        STORAGE,
+        SQL
     }
 
     public ApplicationException(String message, Type type) {

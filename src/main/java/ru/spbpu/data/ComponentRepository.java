@@ -1,5 +1,6 @@
 package ru.spbpu.data;
 
+import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Component;
 import ru.spbpu.logic.ComponentAccessor;
 
@@ -14,5 +15,10 @@ public class ComponentRepository extends AbstractRepository implements Component
         return  (Optional<Component>) this.getAll()
                 .stream()
                 .filter(component -> ((Component)component).getName().equals(name)).findFirst();
+    }
+
+    @Override
+    public AccessorRegistry getRegistry() {
+        return null;
     }
 }

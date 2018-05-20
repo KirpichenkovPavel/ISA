@@ -13,6 +13,12 @@ public class Component extends Entity {
 
     }
 
+    public Component(String name, AccessorRegistry registry, int id) {
+        super(registry);
+        this.name = name;
+        this.setId(id);
+    }
+
     @Override
     protected AccessorRegistry.RegistryKey accessorRegistryKey() {
         return AccessorRegistry.RegistryKey.COMPONENT;

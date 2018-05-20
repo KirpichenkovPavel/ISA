@@ -16,7 +16,7 @@ public class Client extends AbstractUser implements User {
         return Role.CLIENT;
     }
 
-    public ClientOrder makeOrder() {
+    public ClientOrder makeOrder() throws ApplicationException {
         ClientOrder newOrder = this.getRegistry().newOrder(this);
         newOrder.create();
         return newOrder;

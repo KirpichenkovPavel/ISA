@@ -1,5 +1,7 @@
 package ru.spbpu.logic;
 
+import ru.spbpu.exceptions.ApplicationException;
+
 public abstract class Entity {
 
     private int id;
@@ -24,7 +26,11 @@ public abstract class Entity {
         return id;
     }
 
-    public void create() {
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void create() throws ApplicationException {
         id = getAccessor().generateId();
         getAccessor().saveObject(this);
     }
@@ -33,7 +39,7 @@ public abstract class Entity {
         getAccessor().updateObject(this);
     }
 
-    public Entity read() {
+    public Entity read() throws ApplicationException {
         return getAccessor().getById(id);
     }
 

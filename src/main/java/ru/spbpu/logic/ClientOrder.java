@@ -15,6 +15,8 @@ public class ClientOrder extends Order {
 
     @Override
     boolean canBeSubmitted(){
+        if (getStatus() != OrderStatus.NEW)
+            return false;
         Storage storage = getRegistry().getStorage();
         for (Item item: this.getItems()) {
             if (!storage.componentExists(item.getComponent()))

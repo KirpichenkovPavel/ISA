@@ -65,7 +65,7 @@ public class Manager extends AbstractUser implements User {
         }
     }
 
-    public WholesaleOrder makeNewWholesaleOrder(Provider provider) {
+    public WholesaleOrder makeNewWholesaleOrder(Provider provider) throws ApplicationException {
         WholesaleOrder order = getRegistry().newWholesaleOrder(this, provider);
         order.create();
         return order;

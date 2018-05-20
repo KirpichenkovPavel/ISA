@@ -1,9 +1,6 @@
 package ru.spbpu.data;
 
-import ru.spbpu.logic.Order;
-import ru.spbpu.logic.Entity;
-import ru.spbpu.logic.OrderAccessor;
-import ru.spbpu.logic.User;
+import ru.spbpu.logic.*;
 
 import java.util.List;
 
@@ -52,5 +49,10 @@ public class OrderRepository extends AbstractRepository implements OrderAccessor
     @Override
     public void updateObject(Entity object) {
 
+    }
+
+    @Override
+    public AccessorRegistry getRegistry() {
+        return null;
     }
 }

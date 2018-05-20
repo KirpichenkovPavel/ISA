@@ -33,7 +33,8 @@ public class OrderTestSuit {
     @Before
     public void setUp() throws ApplicationException{
 
-        registry = new AccessorRegistry(new ItemRepository(), new ComponentRepository(), new UserRepository(), 
+        registry = new AccessorRegistry();
+        registry.setUp(new ItemRepository(), new ComponentRepository(), new UserRepository(),
                 new StorageRepository(), new OrderRepository(), new PaymentRepository());
         ca = (ComponentAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.COMPONENT);
         sa = (StorageAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.STORAGE);
@@ -148,9 +149,78 @@ public class OrderTestSuit {
         Assert.assertEquals(Order.OrderStatus.CLOSED, order.getStatus());
     }
 
-    @Test
-    public void bpOrderCancelled() throws ApplicationException{
+    private ClientOrder makeTestOrder() throws ApplicationException{
         ClientOrder order = client.makeOrder();
+        Optional<Component> comp1 = ca.getByName("CPU");
+        Optional<Component> comp2 = ca.getByName("GPU");
+        client.addItemToOrder(order, comp1.get(), 5);
+        client.addItemToOrder(order, comp2.get(), 3);
+        return order;
     }
 
+    @Test
+    public void bpNewClientOrderCancelled() throws ApplicationException{
+        ClientOrder order = makeTestOrder();
+        client.cancelOrder(order);
+        Assert.assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
+    }
+
+    @Test
+    public void bpSubmittedClientOrderCancelled() throws ApplicationException {
+        ClientOrder order = makeTestOrder();
+        client.submitOrder(order);
+        client.cancelOrder(order);
+        Assert.assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
+    }
+
+    @Test
+    public void bpAcceptedClientOrderCancelled() throws ApplicationException {
+        ClientOrder order = makeTestOrder();
+        client.submitOrder(order);
+        manager.acceptOrder(order);
+        client.cancelOrder(order);
+        Assert.assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
+    }
+
+    @Test
+    public void bpPayedClientOrderCancelled() throws ApplicationException {
+        ClientOrder order = makeTestOrder();
+        client.submitOrder(order);
+        manager.acceptOrder(order);
+        client.payForOrder(order);
+        client.cancelOrder(order);
+        Assert.assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
+        Assert.assertEquals(Payment.PaymentStatus.CANCELED, order.getPayment().getStatus());
+    }
+
+    @Test
+    public void bpCompleteClientOrderCancelled() throws ApplicationException {
+        ClientOrder order = makeTestOrder();
+        client.submitOrder(order);
+        manager.acceptOrder(order);
+        client.payForOrder(order);
+        manager.executeOrder(order);
+        client.cancelOrder(order);
+        Assert.assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
+        Assert.assertEquals(Payment.PaymentStatus.CANCELED, order.getPayment().getStatus());
+    }
+
+    @Test(expected = ApplicationException.class)
+    public void bpApprovedClientOrderCancelled() throws ApplicationException {
+        ClientOrder order = makeTestOrder();
+        client.submitOrder(order);
+        manager.acceptOrder(order);
+        client.payForOrder(order);
+        manager.executeOrder(order);
+        client.closeCompleteOrder(order);
+        client.cancelOrder(order);
+    }
+
+    @Test
+    public void bpSubmitCancelledOrder() throws ApplicationException {
+        ClientOrder order = makeTestOrder();
+        client.cancelOrder(order);
+        client.submitOrder(order);
+        Assert.assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
+    }
 }
