@@ -10,11 +10,9 @@ public interface Accessor {
 
     List<? extends Entity> getAll() throws ApplicationException;
 
-    void saveObject(Entity object) throws ApplicationException;
+    int saveObject(Entity object) throws ApplicationException;
 
-    void updateObject(Entity object);
-
-    int generateId();
+    int updateObject(Entity object) throws ApplicationException;
 
     AccessorRegistry getRegistry();
 }

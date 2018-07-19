@@ -103,7 +103,7 @@ public abstract class Order extends Entity {
         return payment;
     }
 
-    void returnItemsToStorage() {
+    void returnItemsToStorage() throws ApplicationException{
         Storage storage = getRegistry().getStorage();
         for (Item i: items) {
             storage.addItem(i);
@@ -111,7 +111,7 @@ public abstract class Order extends Entity {
         storage.update();
     }
 
-    void cancelPayment() {
+    void cancelPayment() throws ApplicationException {
         if (payment != null){
             payment.cancel();
             payment.update();

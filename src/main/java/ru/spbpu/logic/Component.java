@@ -9,8 +9,7 @@ public class Component extends Entity {
 
     Component(String name, AccessorRegistry registry) {
         super(registry);
-        this.name = name;
-
+        this.setName(name);
     }
 
     public Component(String name, AccessorRegistry registry, int id) {
@@ -26,6 +25,10 @@ public class Component extends Entity {
 
     public String getName(){
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean equals(Component another) {

@@ -30,7 +30,7 @@ public class Manager extends AbstractUser implements User {
 
     }
 
-    public void setPrice(Component component, int price) {
+    public void setPrice(Component component, int price) throws ApplicationException {
         Storage storage = getRegistry().getStorage();
         if (storage.componentExists(component)) {
             storage.setPrice(component, price);

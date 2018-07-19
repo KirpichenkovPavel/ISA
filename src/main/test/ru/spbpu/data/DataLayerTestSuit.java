@@ -24,7 +24,7 @@ public class DataLayerTestSuit {
     public void setUp() {
         String url = "jdbc:postgresql://localhost:5432/isa";
         registry = new AccessorRegistry();
-        itemAccessor = new ItemRepository();
+        itemAccessor = new ItemMapper(url, registry);
         componentAccessor = new ComponentMapper(url, registry);
         userAccessor = new UserRepository();
         storageAccessor = new StorageRepository();
@@ -49,5 +49,18 @@ public class DataLayerTestSuit {
         }
         List<Component> componentsInStorage = (List<Component>) componentAccessor.getAll();
         Assert.assertEquals(components.size(), componentsInStorage.size());
+    }
+
+    @Test
+    public void debug() throws ApplicationException {
+        Component c = registry.newComponent("debug component");
+        c.create();
+        c.setName("name changed");
+        c.update();
+        Item i = registry.newItem(c, 5);
+        i.create();
+        i.setPrice(100);
+        i.update();
+        System.out.println("End");
     }
 }

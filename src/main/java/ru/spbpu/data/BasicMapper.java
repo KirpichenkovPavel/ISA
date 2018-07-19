@@ -25,7 +25,7 @@ public abstract class BasicMapper implements Accessor {
     private void connect() throws SQLException {
         Properties props = new Properties();
         props.setProperty("user","isa");
-        props.setProperty("password","1sa");
+        props.setProperty("password","isa");
         props.setProperty("ssl","true");
         connection = DriverManager.getConnection(url, props);
     }
@@ -35,7 +35,7 @@ public abstract class BasicMapper implements Accessor {
         return registry;
     }
 
-    abstract Entity parseResultSetEntry(ResultSet resultSet) throws SQLException;
+    abstract Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException;
 
     abstract Map<String, Object> getDatabaseFields(Entity entity);
 
@@ -84,48 +84,87 @@ public abstract class BasicMapper implements Accessor {
         }
     }
 
+    private String makeInsertStatement(Entity object, List<Object> fieldValuesContainer) {
+        Map<String, Object> preparedObject = getDatabaseFields(object);
+        StringBuilder fieldsNames = new StringBuilder();
+        StringBuilder valuesPlaceholder = new StringBuilder();
+        boolean first = true;
+        for (String key: preparedObject.keySet()) {
+            fieldValuesContainer.add(preparedObject.get(key));
+            if (first){
+                fieldsNames.append(String.format("%s", key));
+                valuesPlaceholder.append("?");
+                first = false;
+            } else {
+                fieldsNames.append(String.format(",%s", key));
+                valuesPlaceholder.append(",?");
+            }
+        }
+        return String.format("INSERT INTO %s (%s) VALUES (%s) returning (id)",
+                getTableName(), fieldsNames.toString(), valuesPlaceholder.toString());
+    }
+
     @Override
-    public void saveObject(Entity object) throws ApplicationException {
+    public int saveObject(Entity object) throws ApplicationException {
+        List<Object> values = new ArrayList<>();
+        String statement = makeInsertStatement(object, values);
+        return executeCreateOrUpdateStatement(statement, values);
+    }
+
+    private String makeUpdateStatement(Entity object, List<Object> fieldValuesContainer) {
+        Map<String, Object> preparedObject = getDatabaseFields(object);
+        boolean first = true;
+        StringBuilder fieldBuilder = new StringBuilder();
+        for (String key: preparedObject.keySet()) {
+            fieldValuesContainer.add(preparedObject.get(key));
+            if (first){
+                first = false;
+                fieldBuilder.append(String.format("%s = ?", key));
+            } else {
+                fieldBuilder.append(String.format(",%s = ?", key));
+            }
+        }
+        return String.format("UPDATE %s SET %s WHERE id = %s RETURNING id",
+                getTableName(), fieldBuilder.toString(), object.getId());
+    }
+
+    @Override
+    public int updateObject(Entity object) throws ApplicationException{
+        try {
+            if (object.getId() < 1) {
+                throw new ApplicationException("Object has no id, so can not be updated", ApplicationException.Type.SQL);
+            }
+        } catch (NullPointerException e) {
+            throw new ApplicationException("Object has no id, so can not be updated", ApplicationException.Type.SQL);
+        }
+        List<Object> values = new ArrayList<>();
+        String statement = makeUpdateStatement(object, values);
+        return executeCreateOrUpdateStatement(statement, values);
+    }
+
+    private int executeCreateOrUpdateStatement(String statement, List<Object> fieldValues) throws ApplicationException {
         try {
             if (connection == null || connection.isClosed()) {
                 connect();
             }
-            Map<String, Object> preparedObject = getDatabaseFields(object);
-            StringBuilder fieldsNames = new StringBuilder();
-            StringBuilder valuesPlaceholder = new StringBuilder();
-            List<Object> fieldValues = new ArrayList<>();
-            boolean first = true;
-            for (String key: preparedObject.keySet()) {
-                fieldValues.add(preparedObject.get(key));
-                if (first){
-                    fieldsNames.append(String.format("%s", key));
-                    valuesPlaceholder.append("?");
-                } else {
-                    fieldsNames.append(String.format(",%s", key));
-                    valuesPlaceholder.append(",?");
-                }
-            }
-            String insertString = String.format("INSERT INTO %s (%s) VALUES (%s)",
-                    getTableName(), fieldsNames.toString(), valuesPlaceholder.toString());
-            PreparedStatement insertStatement = connection.prepareStatement(insertString);
+            PreparedStatement insertStatement = connection.prepareStatement(statement);
             for (int i = 0; i < fieldValues.size(); i++) {
                 insertStatement.setObject(i+1, fieldValues.get(i));
             }
             insertStatement.execute();
-            connection.close();
+            ResultSet returning = insertStatement.getResultSet();
+            if (returning.next()) {
+                int id = returning.getInt("id");
+                connection.close();
+                return id;
+            }
+            else {
+                throw new ApplicationException("SQL exception: id was not returned on creation or update",
+                        ApplicationException.Type.SQL);
+            }
         }
         catch (SQLException ex) {
             throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
         }
-    }
-
-    @Override
-    public void updateObject(Entity object) {
-
-    }
-
-    @Override
-    public int generateId() {
-        return 0;
     }
 }

@@ -41,15 +41,15 @@ public class OrderRepository extends AbstractRepository implements OrderAccessor
         return null;
     }
 
-    @Override
-    public void saveObject(Entity object) {
-
-    }
-
-    @Override
-    public void updateObject(Entity object) {
-
-    }
+//    @Override
+//    public void saveObject(Entity object) {
+//
+//    }
+//
+//    @Override
+//    public void updateObject(Entity object) {
+//
+//    }
 
     @Override
     public AccessorRegistry getRegistry() {

@@ -25,20 +25,19 @@ public abstract class AbstractRepository implements Accessor {
         return objects;
     }
 
-    public void saveObject(Entity newObject){
+    public int saveObject(Entity newObject){
         objects.add(newObject);
+        newObject.setId(objects.size());
+        return newObject.getId();
     }
 
-    public void updateObject(Entity updatedObject){
+    public int updateObject(Entity updatedObject){
         objects = objects.stream().map(old -> {
-            if (old.getId() == updatedObject.getId())
+            if (old.getId() == updatedObject.getId()) {
                 return updatedObject;
+            }
             return old;
         }).collect(Collectors.toList());
+        return updatedObject.getId();
     }
-
-    public int generateId() {
-        return objects.size();
-    }
-
 }

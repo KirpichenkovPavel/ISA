@@ -31,11 +31,10 @@ public abstract class Entity {
     }
 
     public void create() throws ApplicationException {
-        id = getAccessor().generateId();
-        getAccessor().saveObject(this);
+        id = getAccessor().saveObject(this);
     }
 
-    public void update() {
+    public void update() throws ApplicationException {
         getAccessor().updateObject(this);
     }
 

@@ -1,5 +1,6 @@
 package ru.spbpu.data;
 
+import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Component;
 import ru.spbpu.logic.ComponentAccessor;
@@ -16,10 +17,14 @@ public class ComponentMapper extends BasicMapper implements ComponentAccessor{
     }
 
     @Override
-    Entity parseResultSetEntry(ResultSet resultSet) throws SQLException {
-        int id = resultSet.getInt("id");
-        String name = resultSet.getString("name");
-        return new Component(name, getRegistry(), id);
+    Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException {
+        try {
+            int id = resultSet.getInt("id");
+            String name = resultSet.getString("name");
+            return new Component(name, getRegistry(), id);
+        } catch (SQLException e) {
+            throw new ApplicationException(String.format("SQL exception: %s", e.getMessage()));
+        }
     }
 
     @Override

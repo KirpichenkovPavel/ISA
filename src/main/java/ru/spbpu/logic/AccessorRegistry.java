@@ -31,7 +31,7 @@ public class AccessorRegistry {
         registry.put(RegistryKey.PAYMENT, pa);
     }
 
-    Accessor getAccessor(RegistryKey key) {
+    public Accessor getAccessor(RegistryKey key) {
         return registry.get(key);
     }
 
