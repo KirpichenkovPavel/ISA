@@ -5,7 +5,7 @@ import ru.spbpu.exceptions.ApplicationException.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Client extends AbstractUser implements User {
+public class Client extends BaseUser implements User {
 
     Client(String name, AccessorRegistry registry) {
         super(name, registry);

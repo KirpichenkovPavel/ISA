@@ -29,7 +29,7 @@ public class ComponentMapper extends BasicMapper implements ComponentAccessor{
 
     @Override
     Map<String, Object> getDatabaseFields(Entity entity) {
-        Map<String, Object> fieldMap = new TreeMap<>();
+        Map<String, Object> fieldMap = new HashMap<>();
         Component component = (Component) entity;
         fieldMap.put("name", component.getName());
         return fieldMap;

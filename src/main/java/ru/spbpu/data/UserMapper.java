@@ -1,0 +1,112 @@
+package ru.spbpu.data;
+
+import ru.spbpu.exceptions.ApplicationException;
+import ru.spbpu.logic.*;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class UserMapper extends BasicMapper implements UserAccessor {
+
+    UserMapper(String url, AccessorRegistry registry) {
+        super(url, registry);
+    }
+
+    @Override
+    Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException {
+        try {
+            int id = resultSet.getInt("id");
+            String name = resultSet.getString("name");
+            return new BaseUser(name, getRegistry(), id);
+        } catch (SQLException e) {
+            throw new ApplicationException(String.format("SQL exception: %s", e.getMessage()));
+        }
+    }
+
+    @Override
+    Map<String, Object> getDatabaseFields(Entity entity) {
+        Map<String, Object> fieldMap = new HashMap<>();
+        User user = (User) entity;
+        fieldMap.put("name", user.getName());
+        return fieldMap;
+    }
+
+    @Override
+    String getTableName() {
+        return "isa_user";
+    }
+
+    @Override
+    public BaseUser getUser(String userName, User.Role role) throws ApplicationException{
+        try {
+            Connection connection = getConnection();
+            String roleStringLiteral = role.name();
+            String selectString = (new StringBuilder())
+                    .append("SELECT u.id")
+                    .append("FROM isa_user u")
+                    .append("JOIN isa_user_role ur on u.id = ur.user_id")
+                    .append("JOIN isa_role r on r.id = ur.role_id")
+                    .append("WHERE u.name = ? AND r.name = ?")
+                    .toString();
+
+            PreparedStatement selectStatement = connection.prepareStatement(selectString);
+            selectStatement.setString(1, userName);
+            selectStatement.setString(2, roleStringLiteral);
+            ResultSet resultSet = selectStatement.executeQuery();
+            if (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                BaseUser user = getRegistry().newUser(userName, role);
+                user.setId(id);
+                return user;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new ApplicationException(String.format("SQL exception: %s", e.getMessage()));
+        }
+    }
+
+    @Override
+    public int addUser(String userName, User.Role role) throws ApplicationException{
+        try {
+            Connection connection = getConnection();
+            String roleStringLiteral = role.name();
+            String insertString = (new StringBuilder())
+                    .append("INSERT INTO isa_user (name) ")
+                    .append("VALUES (?) ")
+                    .append("RETURNING id")
+                    .toString();
+
+            PreparedStatement insertUserStatement = connection.prepareStatement(insertString);
+            insertUserStatement.setString(1, userName);
+            ResultSet resultSet = insertUserStatement.executeQuery();
+            if (resultSet.next()) {
+                int newUserId = resultSet.getInt("id");
+                String addRoleString = (new StringBuilder())
+                        .append("INSERT INTO isa_user_role (user_id, role_id) ")
+                        .append("SELECT ? user_id, id as role_id ")
+                        .append("FROM isa_role ")
+                        .append("WHERE name = ? ")
+                        .append("RETURNING id ")
+                        .toString();
+                PreparedStatement insertRoleStatement = connection.prepareStatement(addRoleString);
+                insertRoleStatement.setInt(1, newUserId);
+                insertRoleStatement.setString(2, roleStringLiteral);
+                insertRoleStatement.executeQuery();
+                return newUserId;
+            }
+            throw new ApplicationException(String.format("User was not created"));
+        } catch (SQLException e) {
+            throw new ApplicationException(String.format("SQL exception: %s", e.getMessage()));
+        }
+    }
+
+    @Override
+    public List<BaseUser> getAllUsers(User.Role role) {
+        return null;
+    }
+}

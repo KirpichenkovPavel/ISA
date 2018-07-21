@@ -55,7 +55,7 @@ public class AccessorRegistry {
         return new Payment(from, to, amount, this);
     }
 
-    public User newUser(String name, User.Role role) throws ApplicationException {
+    public BaseUser newUser(String name, User.Role role) throws ApplicationException {
         switch (role) {
             case CLIENT:
                 return new Client(name, this);

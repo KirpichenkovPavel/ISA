@@ -26,7 +26,7 @@ public class DataLayerTestSuit {
         registry = new AccessorRegistry();
         itemAccessor = new ItemMapper(url, registry);
         componentAccessor = new ComponentMapper(url, registry);
-        userAccessor = new UserRepository();
+        userAccessor = new UserMapper(url, registry);
         storageAccessor = new StorageRepository();
         orderAccessor = new OrderRepository();
         paymentAccessor = new PaymentRepository();
@@ -49,6 +49,15 @@ public class DataLayerTestSuit {
         }
         List<Component> componentsInStorage = (List<Component>) componentAccessor.getAll();
         Assert.assertEquals(components.size(), componentsInStorage.size());
+    }
+
+    @Test
+    public void testAddUser() throws ApplicationException {
+        BaseUser manager = registry.newUser("test manager", User.Role.MANAGER);
+        Assert.assertTrue(manager instanceof Manager);
+        Assert.assertEquals(0, manager.getId());
+        manager.create();
+        Assert.assertNotEquals(0, manager.getId());
     }
 
     @Test

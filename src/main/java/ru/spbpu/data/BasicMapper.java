@@ -22,12 +22,19 @@ public abstract class BasicMapper implements Accessor {
         this.registry = registry;
     }
 
-    private void connect() throws SQLException {
+    protected void connect() throws SQLException {
         Properties props = new Properties();
         props.setProperty("user","isa");
         props.setProperty("password","isa");
         props.setProperty("ssl","true");
         connection = DriverManager.getConnection(url, props);
+    }
+
+    protected Connection getConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connect();
+        }
+        return connection;
     }
 
     @Override
@@ -44,9 +51,7 @@ public abstract class BasicMapper implements Accessor {
     @Override
     public Entity getById(int id) throws ApplicationException {
         try {
-            if (connection == null || connection.isClosed()) {
-                connect();
-            }
+            Connection connection = getConnection();
             String selectString = String.format("SELECT * FROM %s WHERE id = ?", getTableName());
             PreparedStatement selectStatement = connection.prepareStatement(selectString);
             selectStatement.setInt(1, id);

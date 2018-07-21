@@ -1,6 +1,6 @@
 CREATE TABLE isa_component(
   id SERIAL PRIMARY KEY,
-  name VARCHAR(100)
+  name VARCHAR(100) UNIQUE
 );
 
 CREATE TABLE isa_item(
@@ -13,12 +13,12 @@ CREATE TABLE isa_item(
 
 CREATE TABLE isa_user(
   id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL
+  name VARCHAR(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE isa_role(
   id SERIAL PRIMARY KEY,
-  name VARCHAR(32) NOT NULL
+  name VARCHAR(32) NOT NULL UNIQUE
 );
 
 CREATE TABLE isa_user_role(
@@ -64,7 +64,7 @@ CREATE TABLE isa_storage(
 
 CREATE TABLE isa_provider(
   id SERIAL PRIMARY KEY,
-  name VARCHAR(100)
+  name VARCHAR(100) UNIQUE
 );
 
 CREATE TABLE isa_storage_item(

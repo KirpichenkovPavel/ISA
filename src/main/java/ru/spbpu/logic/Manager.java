@@ -2,7 +2,7 @@ package ru.spbpu.logic;
 
 import ru.spbpu.exceptions.ApplicationException;
 
-public class Manager extends AbstractUser implements User {
+public class Manager extends BaseUser implements User {
 
     Manager(String name, AccessorRegistry registry ){
         super(name, registry);
@@ -71,7 +71,10 @@ public class Manager extends AbstractUser implements User {
         return order;
     }
 
-    public void addItemToOrder(WholesaleOrder order, Component component, int amount) {
-
+    public void addItemToOrder(WholesaleOrder order, Component component, int amount) throws ApplicationException {
+        Item newItem = getRegistry().newItem(component, amount);
+        newItem.create();
+        order.addItem(newItem);
+        order.update();
     }
 }
