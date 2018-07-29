@@ -2,21 +2,18 @@ package ru.spbpu.logic;
 
 public class WholesaleOrder extends Order {
 
-    private Manager manager;
-    private Provider provider;
-
     WholesaleOrder(Manager manager, Provider to, AccessorRegistry registry) {
         super(registry);
-        this.manager = manager;
-        this.provider = to;
+        this.setFrom(manager);
+        this.setTo(to);
     }
 
     public Manager getManager() {
-        return manager;
+        return (Manager) getFrom();
     }
 
     public Provider getProvider() {
-        return provider;
+        return (Provider) getTo();
     }
 
     @Override

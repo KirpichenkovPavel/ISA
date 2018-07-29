@@ -4,6 +4,7 @@ import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.Accessor;
 import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Entity;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -37,6 +38,13 @@ public abstract class BasicMapper implements Accessor {
         return connection;
     }
 
+    public void dropData() throws SQLException{
+        Connection c = getConnection();
+        String deleteStatementSQL = String.format("TRUNCATE public.%s CASCADE", getTableName());
+        PreparedStatement deleteStatement = c.prepareStatement(deleteStatementSQL);
+        deleteStatement.execute();
+    }
+
     @Override
     public AccessorRegistry getRegistry() {
         return registry;
@@ -56,10 +64,8 @@ public abstract class BasicMapper implements Accessor {
             PreparedStatement selectStatement = connection.prepareStatement(selectString);
             selectStatement.setInt(1, id);
             ResultSet results = selectStatement.executeQuery();
-            int resultCount = results.getFetchSize();
-            if (resultCount != 1) {
-                String errorMessage = String.format("Wrong number of records: %d", resultCount);
-                throw new ApplicationException(errorMessage, ApplicationException.Type.SQL);
+            if (!results.next()) {
+                return null;
             }
             return parseResultSetEntry(results);
         }
@@ -171,5 +177,13 @@ public abstract class BasicMapper implements Accessor {
         catch (SQLException ex) {
             throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
         }
+    }
+
+    protected List<Entity> getM2MList() {
+//        List<Entity> results = new ArrayList<>();
+//        String statement = (new StringBuilder())
+//                .append("SELECT ")
+//        return results;
+        throw new NotImplementedException();
     }
 }

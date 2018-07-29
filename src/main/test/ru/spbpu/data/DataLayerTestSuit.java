@@ -7,6 +7,7 @@ import org.junit.Test;
 import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,15 +23,29 @@ public class DataLayerTestSuit {
 
     @Before
     public void setUp() {
-        String url = "jdbc:postgresql://localhost:5432/isa";
+        String url = "jdbc:postgresql://localhost:5432/isa_test";
         registry = new AccessorRegistry();
         itemAccessor = new ItemMapper(url, registry);
         componentAccessor = new ComponentMapper(url, registry);
         userAccessor = new UserMapper(url, registry);
         storageAccessor = new StorageRepository();
-        orderAccessor = new OrderRepository();
-        paymentAccessor = new PaymentRepository();
+        orderAccessor = new OrderMapper(url, registry);
+        paymentAccessor = new PaymentMapper(url, registry);
         registry.setUp(itemAccessor, componentAccessor, userAccessor, storageAccessor, orderAccessor, paymentAccessor);
+        try {
+            dropData();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void dropData() throws SQLException {
+        for (AccessorRegistry.RegistryKey key: AccessorRegistry.RegistryKey.values()) {
+            Accessor accessor = registry.getAccessor(key);
+            if (accessor instanceof BasicMapper) {
+                ((BasicMapper) accessor).dropData();
+            }
+        }
     }
 
     @After
@@ -58,6 +73,25 @@ public class DataLayerTestSuit {
         Assert.assertEquals(0, manager.getId());
         manager.create();
         Assert.assertNotEquals(0, manager.getId());
+    }
+
+    @Test
+    public void testPayment() throws ApplicationException {
+        BaseUser client = registry.newUser("test client for payment", User.Role.CLIENT);
+        BaseUser manager = registry.newUser("test manager for payment", User.Role.MANAGER);
+        client.create();
+        manager.create();
+        int amount = 42;
+        Payment payment = registry.newPayment(client, manager, amount);
+        Assert.assertEquals(amount, payment.getAmount());
+        Assert.assertEquals(0, payment.getId());
+        payment.create();
+        Assert.assertNotEquals(0, payment.getId());
+        PaymentAccessor pa = (PaymentAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.PAYMENT);
+        Payment fetchedPayment = (Payment) pa.getById(payment.getId());
+        Assert.assertEquals(payment.getAmount(), fetchedPayment.getAmount());
+        Assert.assertEquals(payment.getSourceUser().getId(), fetchedPayment.getSourceUser().getId());
+        Assert.assertEquals(payment.getTargetUser().getId(), fetchedPayment.getTargetUser().getId());
     }
 
     @Test

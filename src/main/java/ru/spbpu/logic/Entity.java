@@ -23,7 +23,7 @@ public abstract class Entity {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(int id) {
@@ -31,7 +31,7 @@ public abstract class Entity {
     }
 
     public void create() throws ApplicationException {
-        id = getAccessor().saveObject(this);
+        this.id = getAccessor().saveObject(this);
     }
 
     public void update() throws ApplicationException {

@@ -2,15 +2,13 @@ package ru.spbpu.logic;
 
 public class ClientOrder extends Order {
 
-    private Client client;
-
     ClientOrder(Client from, AccessorRegistry registry) {
         super(registry);
-        this.client = from;
+        this.setFrom(from);
     }
 
     Client getClient() {
-        return client;
+        return (Client) getFrom();
     }
 
     @Override

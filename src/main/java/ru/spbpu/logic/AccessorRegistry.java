@@ -51,9 +51,13 @@ public class AccessorRegistry {
         return new WholesaleOrder(from, to, this);
     }
 
-    public Payment newPayment(User from, User to, int amount) {
+    public Payment newPayment(BaseUser from, BaseUser to, int amount) {
         return new Payment(from, to, amount, this);
     }
+
+//    public Payment newPayment(BaseUser from, BaseUser to, int amount, Payment.PaymentStatus status, int id) {
+//        return new Payment(from, to, amount, this);
+//    }
 
     public BaseUser newUser(String name, User.Role role) throws ApplicationException {
         switch (role) {

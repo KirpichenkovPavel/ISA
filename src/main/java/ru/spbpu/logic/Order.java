@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class Order extends Entity {
+public class Order extends Entity {
 
     public enum OrderStatus {
         NEW,
@@ -20,11 +20,49 @@ public abstract class Order extends Entity {
     private OrderStatus status;
     private List<Item> items;
     private Payment payment;
+    private BaseUser from;
+    private BaseUser to;
 
-    Order (AccessorRegistry registry) {
+    public Order (AccessorRegistry registry) {
         super(registry);
         this.status = OrderStatus.NEW;
         this.items = new ArrayList<>();
+    }
+
+    public BaseUser getFrom() {
+        return from;
+    }
+
+    public BaseUser getTo() {
+        return to;
+    }
+
+    public void setFrom(BaseUser from) {
+        this.from = from;
+    }
+
+    public void setTo(BaseUser to) {
+        this.to = to;
+    }
+
+    public Payment getPayment() {
+        return this.payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
     @Override
@@ -32,19 +70,7 @@ public abstract class Order extends Entity {
         return AccessorRegistry.RegistryKey.ORDER;
     }
 
-    void setStatus(OrderStatus newStatus) {
-        this.status = newStatus;
-    }
-
-    protected void setItems(List<Item> newItems) {
-        items = newItems;
-    }
-
-    protected void setPayment(Payment payment) {
-        this.payment = payment;
-    }
-
-    OrderStatus getStatus() {return status;}
+    public OrderStatus getStatus() {return status;}
 
     void addItem(Item newItem) {
         for (Item i: items) {
@@ -65,9 +91,13 @@ public abstract class Order extends Entity {
                 .collect(Collectors.toList());
     }
 
-    abstract boolean canBeSubmitted();
+    boolean canBeSubmitted() {
+        return true;
+    };
 
-    abstract boolean canBeAccepted();
+    boolean canBeAccepted() {
+        return true;
+    };
 
     boolean canBePaid() {
         return payment != null && status == OrderStatus.ACCEPTED;
@@ -95,13 +125,7 @@ public abstract class Order extends Entity {
         return total;
     }
 
-    List<Item> getItems() {
-        return items;
-    }
 
-    Payment getPayment() {
-        return payment;
-    }
 
     void returnItemsToStorage() throws ApplicationException{
         Storage storage = getRegistry().getStorage();

@@ -1,12 +1,9 @@
 package ru.spbpu.logic;
 
-import ru.spbpu.data.ItemRepository;
-
 public class Payment extends Entity {
 
-    private int id;
-    private User from;
-    private User to;
+    private BaseUser from;
+    private BaseUser to;
     private int amount;
     private PaymentStatus status;
 
@@ -17,12 +14,21 @@ public class Payment extends Entity {
         CANCELED
     }
 
-    Payment(User from, User to, int amount, AccessorRegistry registry) {
+    Payment(BaseUser from, BaseUser to, int amount, AccessorRegistry registry) {
         super(registry);
         this.from = from;
         this.to = to;
         this.amount = amount;
         this.status = PaymentStatus.OPEN;
+    }
+
+    public Payment(BaseUser from, BaseUser to, int amount, PaymentStatus status, int id, AccessorRegistry registry) {
+        super(registry);
+        this.from = from;
+        this.to = to;
+        this.amount = amount;
+        this.status = status;
+        this.setId(id);
     }
 
     @Override
@@ -46,17 +52,12 @@ public class Payment extends Entity {
         return status;
     }
 
-    public User getSourceUser() {
+    public BaseUser getSourceUser() {
         return from;
     }
 
-    public User getTargetUser() {
+    public BaseUser getTargetUser() {
         return to;
-    }
-
-
-    public int getId() {
-        return id;
     }
 
     public int getAmount() {

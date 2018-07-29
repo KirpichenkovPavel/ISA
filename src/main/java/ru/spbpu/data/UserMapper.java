@@ -42,21 +42,36 @@ public class UserMapper extends BasicMapper implements UserAccessor {
     }
 
     @Override
+    public void dropData() throws SQLException {
+        Connection c = getConnection();
+        String deleteStatementSQL = "TRUNCATE public.isa_user_role CASCADE ";
+        PreparedStatement deleteStatement = c.prepareStatement(deleteStatementSQL);
+        deleteStatement.execute();
+        super.dropData();
+    }
+
+    @Override
     public BaseUser getUser(String userName, User.Role role) throws ApplicationException{
         try {
             Connection connection = getConnection();
             String roleStringLiteral = role.name();
-            String selectString = (new StringBuilder())
+            boolean withRole = role != User.Role.NONE;
+            StringBuilder selectBuilder = (new StringBuilder())
                     .append("SELECT u.id")
-                    .append("FROM isa_user u")
-                    .append("JOIN isa_user_role ur on u.id = ur.user_id")
-                    .append("JOIN isa_role r on r.id = ur.role_id")
-                    .append("WHERE u.name = ? AND r.name = ?")
-                    .toString();
+                    .append("FROM isa_user u");
+            if (withRole)
+                selectBuilder
+                        .append("JOIN isa_user_role ur on u.id = ur.user_id")
+                        .append("JOIN isa_role r on r.id = ur.role_id");
+            selectBuilder.append("WHERE u.name = ? ");
+            if (withRole)
+                selectBuilder.append("AND r.name = ?");
+            String selectString = selectBuilder.toString();
 
             PreparedStatement selectStatement = connection.prepareStatement(selectString);
             selectStatement.setString(1, userName);
-            selectStatement.setString(2, roleStringLiteral);
+            if (withRole)
+                selectStatement.setString(2, roleStringLiteral);
             ResultSet resultSet = selectStatement.executeQuery();
             if (resultSet.next()) {
                 int id = resultSet.getInt("id");
