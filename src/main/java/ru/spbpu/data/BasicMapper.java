@@ -4,19 +4,19 @@ import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.Accessor;
 import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Entity;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import ru.spbpu.util.Pair;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+
+import static ru.spbpu.exceptions.ApplicationException.Type.REFLECTION;
 
 public abstract class BasicMapper implements Accessor {
 
     private String url;
     private Connection connection;
     private AccessorRegistry registry;
+    private final String tablePrefix = "isa";
 
     BasicMapper(String url, AccessorRegistry registry) {
         this.url = url;
@@ -54,12 +54,27 @@ public abstract class BasicMapper implements Accessor {
 
     abstract Map<String, Object> getDatabaseFields(Entity entity);
 
-    abstract String getTableName();
+    Map<String, Pair<List<? extends Entity>, BasicMapper>> getM2MFields(Entity entity) {
+        return new HashMap<>();
+    }
+
+    abstract String getTableNameBase();
+
+    String getTablePrefix() {
+        return tablePrefix;
+    }
+
+    protected String getTableName() {
+        return String.format("%s_%s", getTablePrefix(), getTableNameBase());
+    }
+
+    protected String getM2MTableName(BasicMapper listEntityMapper) {
+        return String.format("%s_%s_%s", getTablePrefix(), getTableNameBase(), listEntityMapper.getTableNameBase());
+    }
 
     @Override
     public Entity getById(int id) throws ApplicationException {
-        try {
-            Connection connection = getConnection();
+        try (Connection connection = getConnection()) {
             String selectString = String.format("SELECT * FROM %s WHERE id = ?", getTableName());
             PreparedStatement selectStatement = connection.prepareStatement(selectString);
             selectStatement.setInt(1, id);
@@ -67,7 +82,19 @@ public abstract class BasicMapper implements Accessor {
             if (!results.next()) {
                 return null;
             }
-            return parseResultSetEntry(results);
+            Entity entity = parseResultSetEntry(results);
+            for (Map.Entry<String, Pair<List<? extends Entity>, BasicMapper>> entry: getM2MFields(entity).entrySet()) {
+                String fieldName = entry.getKey();
+                Pair<List<? extends Entity>, BasicMapper> fieldPair = entry.getValue();
+                BasicMapper listEntityMapper = fieldPair.getSecond();
+                List<? extends Entity> relatedEntityList = getM2MList(entity.getId(), listEntityMapper);
+                try {
+                    entity.setField(fieldName, relatedEntityList);
+                } catch (Exception ex) {
+                    throw new ApplicationException(ex.getMessage(), REFLECTION);
+                }
+            }
+            return entity;
         }
         catch (SQLException ex) {
             throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
@@ -76,10 +103,7 @@ public abstract class BasicMapper implements Accessor {
 
     @Override
     public List<? extends Entity> getAll() throws ApplicationException {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connect();
-            }
+        try (Connection connection = getConnection()){
             String selectString = String.format("SELECT * FROM %s", getTableName());
             PreparedStatement selectStatement = connection.prepareStatement(selectString);
             ResultSet resultSet = selectStatement.executeQuery();
@@ -150,14 +174,14 @@ public abstract class BasicMapper implements Accessor {
         }
         List<Object> values = new ArrayList<>();
         String statement = makeUpdateStatement(object, values);
-        return executeCreateOrUpdateStatement(statement, values);
+        int updatedId = executeCreateOrUpdateStatement(statement, values);
+        object.setId(updatedId);
+        this.updateM2MFields(object);
+        return updatedId;
     }
 
     private int executeCreateOrUpdateStatement(String statement, List<Object> fieldValues) throws ApplicationException {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connect();
-            }
+        try (Connection connection = getConnection()){
             PreparedStatement insertStatement = connection.prepareStatement(statement);
             for (int i = 0; i < fieldValues.size(); i++) {
                 insertStatement.setObject(i+1, fieldValues.get(i));
@@ -179,11 +203,85 @@ public abstract class BasicMapper implements Accessor {
         }
     }
 
-    protected List<Entity> getM2MList() {
-//        List<Entity> results = new ArrayList<>();
-//        String statement = (new StringBuilder())
-//                .append("SELECT ")
-//        return results;
-        throw new NotImplementedException();
+    protected List<Entity> getM2MList(int id, BasicMapper listEntityMapper) throws ApplicationException {
+        try (Connection connection = getConnection()){
+            List<Entity> results = new ArrayList<>();
+            String firstTable = getTableName();
+            String secondTable = listEntityMapper.getTableName();
+            String joinTable = getM2MTableName(listEntityMapper);
+            String firstBase = getTableNameBase();
+            String secondBase = listEntityMapper.getTableNameBase();
+            String statement = String.format((new StringBuilder())
+                    .append("SELECT * ")
+                    .append("FROM %s as first ")
+                    .append("JOIN %s as inner on first.id = inner.%s_id ")
+                    .append("JOIN %s as second on second.id = inner.%s_id ")
+                    .append("WHERE first.id = ? ")
+                    .toString(), firstTable, joinTable, firstBase, secondTable, secondBase);
+            PreparedStatement selectListStatement = connection.prepareStatement(statement);
+            selectListStatement.setInt(1, id);
+            ResultSet resultSet = selectListStatement.executeQuery();
+            while (resultSet.next()) {
+                Entity nextResult = listEntityMapper.parseResultSetEntry(resultSet);
+                results.add(nextResult);
+            }
+            return results;
+        } catch (SQLException ex) {
+            throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
+        }
+    }
+
+    protected void updateM2MFields(Entity entity) throws ApplicationException {
+        int entityId = entity.getId();
+        if (getM2MFields(entity) == null)
+            return;
+        if (entityId == 0) {
+            throw new ApplicationException("SQL exception: can't update fields of non-created object",
+                    ApplicationException.Type.SQL);
+        }
+        try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
+            boolean operationSuccessful = true;
+            for (Pair<List<? extends Entity>, BasicMapper> listEntityPair : getM2MFields(entity).values()) {
+//                System.out.println("loop");
+                BasicMapper listMapper = listEntityPair.getSecond();
+                String joinTable = getM2MTableName(listMapper);
+                String mainTableBase = getTableNameBase();
+                String deleteStatement = String.format((new StringBuilder())
+                        .append("DELETE FROM %s ")
+                        .append("WHERE %s_id = ?")
+                        .toString(), joinTable, mainTableBase);
+                PreparedStatement preparedDeleteStatement = connection.prepareStatement(deleteStatement);
+                preparedDeleteStatement.setInt(1, entityId);
+                preparedDeleteStatement.execute();
+                List<? extends Entity> actualList = listEntityPair.getFirst();
+                List<String> tmpList = new ArrayList<>();
+                for (int i = 0; i < actualList.size(); i++)
+                    tmpList.add("(?, ?)");
+                String entityColumnId = String.format("%s_id", getTableNameBase());
+                String listColumnId = String.format("%s_id", listMapper.getTableNameBase());
+                String placeholder = String.join(", ", tmpList);
+                String insertStatement = String.format((new StringBuilder())
+                        .append("INSERT INTO %s (%s, %s) ")
+                        .append("VALUES %s ")
+                        .append("RETURNING true")
+                        .toString(), joinTable, entityColumnId, listColumnId, placeholder);
+                PreparedStatement preparedInsertStatement = connection.prepareStatement(insertStatement);
+                for (int i = 0; i < actualList.size(); i++) {
+                    preparedInsertStatement.setInt(2 * i + 1, entity.getId());
+                    preparedInsertStatement.setInt(2 * i + 2, actualList.get(i).getId());
+                }
+                System.out.println(preparedInsertStatement.toString());
+                if (!preparedInsertStatement.execute()) {
+                    operationSuccessful = false;
+                }
+            }
+            if (operationSuccessful)
+                connection.commit();
+            else
+                connection.rollback();
+        } catch (SQLException ex) {
+            throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
+        }
     }
 }

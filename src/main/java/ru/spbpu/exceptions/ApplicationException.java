@@ -8,7 +8,8 @@ public class ApplicationException extends Exception {
         DEFAULT,
         ORDER_STATUS,
         STORAGE,
-        SQL
+        SQL,
+        REFLECTION
     }
 
     public ApplicationException(String message, Type type) {

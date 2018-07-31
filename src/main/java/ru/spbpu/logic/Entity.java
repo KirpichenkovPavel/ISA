@@ -2,6 +2,9 @@ package ru.spbpu.logic;
 
 import ru.spbpu.exceptions.ApplicationException;
 
+import java.lang.reflect.Field;
+import java.util.List;
+
 public abstract class Entity {
 
     private int id;
@@ -42,5 +45,9 @@ public abstract class Entity {
         return getAccessor().getById(id);
     }
 
-
+    public void setField(String fieldName, List value)
+            throws NoSuchFieldException, IllegalAccessException {
+        Field field = getClass().getDeclaredField(fieldName);
+        field.set(fieldName, value);
+    }
 }

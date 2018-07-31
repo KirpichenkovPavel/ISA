@@ -2,10 +2,12 @@ package ru.spbpu.data;
 
 import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.*;
+import ru.spbpu.util.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PaymentMapper extends BasicMapper implements PaymentAccessor {
@@ -43,7 +45,7 @@ public class PaymentMapper extends BasicMapper implements PaymentAccessor {
     }
 
     @Override
-    String getTableName() {
-        return "isa_payment";
+    String getTableNameBase() {
+        return "payment";
     }
 }

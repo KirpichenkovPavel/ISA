@@ -36,8 +36,8 @@ public class ComponentMapper extends BasicMapper implements ComponentAccessor{
     }
 
     @Override
-    String getTableName() {
-        return "isa_component";
+    String getTableNameBase() {
+        return "component";
     }
 
     @Override

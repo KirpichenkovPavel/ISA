@@ -7,11 +7,6 @@ import java.util.List;
 public class OrderRepository extends AbstractRepository implements OrderAccessor {
 
     @Override
-    public Order getOrder(int id) {
-        return null;
-    }
-
-    @Override
     public List<Order> getOrdersByUser(User user) {
         return null;
     }
@@ -21,15 +16,6 @@ public class OrderRepository extends AbstractRepository implements OrderAccessor
         return null;
     }
 
-    @Override
-    public void addOrder(Order newOrder) {
-
-    }
-
-    @Override
-    public void saveOrder(Order changedOrder) {
-
-    }
 
     @Override
     public Order getById(int id) {

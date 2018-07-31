@@ -2,6 +2,7 @@ package ru.spbpu.data;
 
 import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.*;
+import ru.spbpu.util.Pair;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -77,8 +78,8 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
     }
 
     @Override
-    String getTableName() {
-        return "isa_order";
+    String getTableNameBase() {
+        return "order";
     }
 
     @Override
@@ -89,5 +90,14 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
     @Override
     public List<Order> getOrdersByTargetUser(User user) {
         return null;
+    }
+
+    @Override
+    Map<String, Pair<List<? extends Entity>, BasicMapper>> getM2MFields(Entity entity) {
+        Map<String, Pair<List<? extends Entity>, BasicMapper>> m2mFields = new HashMap<>();
+        Order order = (Order) entity;
+        BasicMapper itemMapper = (ItemMapper) getRegistry().getAccessor(AccessorRegistry.RegistryKey.ITEM);
+        m2mFields.put("items", new Pair<>(order.getItems(), itemMapper));
+        return m2mFields;
     }
 }

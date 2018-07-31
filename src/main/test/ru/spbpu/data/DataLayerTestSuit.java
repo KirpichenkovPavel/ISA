@@ -95,15 +95,19 @@ public class DataLayerTestSuit {
     }
 
     @Test
-    public void debug() throws ApplicationException {
-        Component c = registry.newComponent("debug component");
-        c.create();
-        c.setName("name changed");
-        c.update();
-        Item i = registry.newItem(c, 5);
-        i.create();
-        i.setPrice(100);
-        i.update();
-        System.out.println("End");
+    public void testM2M() throws ApplicationException {
+        Client client = (Client) registry.newUser("test client for payment", User.Role.CLIENT);
+        client.create();
+        Component component1 = registry.newComponent("component 1");
+        component1.create();
+        int comp1quant = 5;
+        Component component2 = registry.newComponent("component 2");
+        component2.create();
+        int comp2quant = 13;
+        ClientOrder order = client.makeOrder();
+        order.create();
+        client.addItemToOrder(order, component1, comp1quant);
+        client.addItemToOrder(order, component2, comp2quant);
+        order.update();
     }
 }

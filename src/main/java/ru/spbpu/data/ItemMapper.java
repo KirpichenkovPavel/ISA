@@ -41,7 +41,7 @@ public class ItemMapper extends BasicMapper implements ItemAccessor {
     }
 
     @Override
-    String getTableName() {
-        return "isa_item";
+    String getTableNameBase() {
+        return "item";
     }
 }

@@ -37,8 +37,8 @@ public class UserMapper extends BasicMapper implements UserAccessor {
     }
 
     @Override
-    String getTableName() {
-        return "isa_user";
+    String getTableNameBase() {
+        return "user";
     }
 
     @Override
