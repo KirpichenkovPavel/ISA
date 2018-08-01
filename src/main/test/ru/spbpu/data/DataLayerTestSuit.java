@@ -109,5 +109,8 @@ public class DataLayerTestSuit {
         client.addItemToOrder(order, component1, comp1quant);
         client.addItemToOrder(order, component2, comp2quant);
         order.update();
+        Assert.assertNotEquals(0, order.getId());
+        Order fetchedOrder = (Order) orderAccessor.getById(order.getId());
+        Assert.assertEquals(2, fetchedOrder.getItems().size());
     }
 }

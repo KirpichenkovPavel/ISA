@@ -45,9 +45,10 @@ public abstract class Entity {
         return getAccessor().getById(id);
     }
 
-    public void setField(String fieldName, List value)
+    public void setField(String fieldName, Object value)
             throws NoSuchFieldException, IllegalAccessException {
         Field field = getClass().getDeclaredField(fieldName);
-        field.set(fieldName, value);
+        field.setAccessible(true);
+        field.set(this, value);
     }
 }

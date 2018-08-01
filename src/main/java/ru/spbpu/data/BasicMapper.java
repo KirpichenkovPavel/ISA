@@ -4,6 +4,7 @@ import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.Accessor;
 import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Entity;
+import ru.spbpu.logic.Order;
 import ru.spbpu.util.Pair;
 
 import java.sql.*;
@@ -87,7 +88,7 @@ public abstract class BasicMapper implements Accessor {
                 String fieldName = entry.getKey();
                 Pair<List<? extends Entity>, BasicMapper> fieldPair = entry.getValue();
                 BasicMapper listEntityMapper = fieldPair.getSecond();
-                List<? extends Entity> relatedEntityList = getM2MList(entity.getId(), listEntityMapper);
+                List<? extends Entity> relatedEntityList = getM2MList(id, listEntityMapper);
                 try {
                     entity.setField(fieldName, relatedEntityList);
                 } catch (Exception ex) {
@@ -214,8 +215,8 @@ public abstract class BasicMapper implements Accessor {
             String statement = String.format((new StringBuilder())
                     .append("SELECT * ")
                     .append("FROM %s as first ")
-                    .append("JOIN %s as inner on first.id = inner.%s_id ")
-                    .append("JOIN %s as second on second.id = inner.%s_id ")
+                    .append("JOIN %s as conn on first.id = conn.%s_id ")
+                    .append("JOIN %s as second on second.id = conn.%s_id ")
                     .append("WHERE first.id = ? ")
                     .toString(), firstTable, joinTable, firstBase, secondTable, secondBase);
             PreparedStatement selectListStatement = connection.prepareStatement(statement);
@@ -243,7 +244,6 @@ public abstract class BasicMapper implements Accessor {
             connection.setAutoCommit(false);
             boolean operationSuccessful = true;
             for (Pair<List<? extends Entity>, BasicMapper> listEntityPair : getM2MFields(entity).values()) {
-//                System.out.println("loop");
                 BasicMapper listMapper = listEntityPair.getSecond();
                 String joinTable = getM2MTableName(listMapper);
                 String mainTableBase = getTableNameBase();
@@ -271,7 +271,6 @@ public abstract class BasicMapper implements Accessor {
                     preparedInsertStatement.setInt(2 * i + 1, entity.getId());
                     preparedInsertStatement.setInt(2 * i + 2, actualList.get(i).getId());
                 }
-                System.out.println(preparedInsertStatement.toString());
                 if (!preparedInsertStatement.execute()) {
                     operationSuccessful = false;
                 }

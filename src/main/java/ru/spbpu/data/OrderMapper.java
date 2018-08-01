@@ -62,19 +62,7 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
     @Override
     public Order getById(int id) throws ApplicationException {
         Order order = (Order) super.getById(id);
-        order.setItems(getOrderItems(id));
         return order;
-    }
-
-    protected List<Item> getOrderItems(int id) throws ApplicationException {
-        try {
-            List<Item> items = new ArrayList<>();
-            Connection connection = getConnection();
-
-            return items;
-        } catch (SQLException ex) {
-            throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
-        }
     }
 
     @Override
