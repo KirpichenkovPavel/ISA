@@ -13,12 +13,12 @@ import java.util.Map;
 
 public class UserMapper extends BasicMapper implements UserAccessor {
 
-    UserMapper(String url, AccessorRegistry registry) {
+    public UserMapper(String url, AccessorRegistry registry) {
         super(url, registry);
     }
 
     @Override
-    Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException {
+    Entity parseResultSetEntry(ResultSet resultSet, String idColumn) throws ApplicationException {
         try {
             int id = resultSet.getInt("id");
             String name = resultSet.getString("name");

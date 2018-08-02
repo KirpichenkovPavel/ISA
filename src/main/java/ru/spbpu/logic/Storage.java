@@ -3,22 +3,31 @@ package ru.spbpu.logic;
 import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.exceptions.ApplicationException.Type;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Storage extends Entity {
-    private Map<Component, Item> components;
-    private static Storage instance;
+    private List<Item> items;
+    private String name;
 
-    private Storage(AccessorRegistry registry) {
+    public Storage(AccessorRegistry registry) {
         super(registry);
-        components = new HashMap<>();
+        items = new ArrayList<>();
+        this.name = "Storage";
     }
 
-    static Storage getInstance(AccessorRegistry registry) {
-        if (instance == null)
-            instance = new Storage(registry);
-        return instance;
+    public Storage(AccessorRegistry registry, String name, int id) {
+        super(registry, id);
+        items = new ArrayList<>();
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Item> getItems() {
+        return items;
     }
 
     @Override
@@ -26,28 +35,48 @@ public class Storage extends Entity {
         return AccessorRegistry.RegistryKey.STORAGE;
     }
 
+    public boolean componentExists(Component component) {
+        return items.stream().anyMatch(item -> item.getComponent().equals(component));
+    }
+
+    private Item getItemByComponent(Component component) {
+        for (Item i: items) {
+            if (i.getComponent().equals(component))
+                return i;
+        }
+        return null;
+//        Optional<Item> match = items.stream().filter(item -> item.getComponent().equals(component)).findFirst();
+//        return match.orElse(null);
+    }
+
+    private void updateItem(Item newItem) {
+        List<Item> filteredItems = items.stream()
+                .filter(item -> !item.getComponent().equals(newItem.getComponent()))
+                .collect(Collectors.toList());
+        filteredItems.add(newItem);
+        items = filteredItems;
+    }
+
     public void addItem(Item newItem) {
-        if (components.containsKey(newItem.getComponent())){
-            Item componentsInStorage = components.get(newItem.getComponent());
+        if (componentExists(newItem.getComponent())){
+            Item componentsInStorage = getItemByComponent(newItem.getComponent());
             componentsInStorage.setAmount(componentsInStorage.getAmount() + newItem.getAmount());
         }
         else {
-            components.put(newItem.getComponent(), newItem);
+            items.add(newItem);
         }
     }
 
-    public boolean componentExists(Component component) {
-        return components.containsKey(component);
-    }
-
     public int componentAmount(Component component) {
-        return componentExists(component) ? components.get(component).getAmount() : 0;
+        Item item = getItemByComponent(component);
+        return item != null ? item.getAmount() : 0;
     }
 
     public int componentPrice(Component component) throws ApplicationException {
-        if (!componentExists(component))
+        Item item = getItemByComponent(component);
+        if (item == null)
             throw new ApplicationException("Component does not exist", Type.STORAGE);
-        return components.get(component).getPrice();
+        return item.getPrice();
     }
 
     public void takeComponents(Component component, int amount) throws ApplicationException {
@@ -55,22 +84,25 @@ public class Storage extends Entity {
         if (reserve < amount){
             throw new ApplicationException("Not enough components in storage", Type.STORAGE);
         }
-        components.get(component).setAmount(reserve - amount);
+        getItemByComponent(component).setAmount(reserve - amount);
     }
 
-    public void setPrice(Component component, int newPrice) {
-        if (components.containsKey(component)) {
-            components.get(component).setPrice(newPrice);
-        }
-        else {
-            components.put(component, this.getRegistry().newItem(component, newPrice, 0));
+    public void setPrice(Component component, int newPrice) throws ApplicationException {
+        Item item = getItemByComponent(component);
+        if (item != null) {
+            item.setPrice(newPrice);
+            item.update();
+        } else {
+            Item newItem = this.getRegistry().newItem(component, 0, newPrice);
+            newItem.create();
+            items.add(newItem);
         }
     }
 
     public void removeFromStorage(Component component) throws ApplicationException {
-        if (!components.containsKey(component)){
+        if (componentExists(component)){
             throw new ApplicationException("Component does not exist", Type.STORAGE);
         }
-        components.remove(component);
+        items = items.stream().filter(item -> item.getComponent() != component).collect(Collectors.toList());
     }
 }

@@ -22,6 +22,7 @@ public class Manager extends BaseUser implements User {
         for (Item itemFromOrder: order.getItems()) {
             storage.takeComponents(itemFromOrder.getComponent(), itemFromOrder.getAmount());
         }
+        storage.update();
         Payment payment = getRegistry().newPayment(order.getClient(), this, order.totalPrice());
         payment.create();
         order.setStatus(Order.OrderStatus.ACCEPTED);
@@ -32,9 +33,7 @@ public class Manager extends BaseUser implements User {
 
     public void setPrice(Component component, int price) throws ApplicationException {
         Storage storage = getRegistry().getStorage();
-        if (storage.componentExists(component)) {
-            storage.setPrice(component, price);
-        }
+        storage.setPrice(component, price);
         storage.update();
     }
 

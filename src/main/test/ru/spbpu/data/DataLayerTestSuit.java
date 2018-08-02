@@ -28,7 +28,7 @@ public class DataLayerTestSuit {
         itemAccessor = new ItemMapper(url, registry);
         componentAccessor = new ComponentMapper(url, registry);
         userAccessor = new UserMapper(url, registry);
-        storageAccessor = new StorageRepository();
+        storageAccessor = new StorageMapper(url, registry);
         orderAccessor = new OrderMapper(url, registry);
         paymentAccessor = new PaymentMapper(url, registry);
         registry.setUp(itemAccessor, componentAccessor, userAccessor, storageAccessor, orderAccessor, paymentAccessor);
@@ -37,6 +37,7 @@ public class DataLayerTestSuit {
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+
     }
 
     private void dropData() throws SQLException {
@@ -112,5 +113,39 @@ public class DataLayerTestSuit {
         Assert.assertNotEquals(0, order.getId());
         Order fetchedOrder = (Order) orderAccessor.getById(order.getId());
         Assert.assertEquals(2, fetchedOrder.getItems().size());
+    }
+
+    @Test
+    public void testStorage() throws ApplicationException {
+        Storage storage = registry.getStorage();
+        Component c1 = registry.newComponent("c1");
+        c1.create();
+        Component c2 = registry.newComponent("c2");
+        c2.create();
+        Component c3 = registry.newComponent("c3");
+        c3.create();
+        Component c4 = registry.newComponent("c4");
+        c4.create();
+        Item i1 = registry.newItem(c1, 5);
+        i1.create();
+        Item i2 = registry.newItem(c2, 3);
+        i2.create();
+        Item i3 = registry.newItem(c3, 2);
+        i3.create();
+        storage.addItem(i1);
+        storage.addItem(i2);
+        storage.addItem(i3);
+        storage.update();
+        storage.takeComponents(c1, 4);
+        storage.takeComponents(c2, 1);
+        storage.takeComponents(c3, 1);
+        storage.takeComponents(c3, 1);
+        storage.update();
+        Storage fetchedStorage = (Storage) storageAccessor.getById(storage.getId());
+        Assert.assertEquals(3, fetchedStorage.getItems().size());
+        Assert.assertEquals(1, fetchedStorage.componentAmount(c1));
+        Assert.assertEquals(2, fetchedStorage.componentAmount(c2));
+        Assert.assertEquals(0, fetchedStorage.componentAmount(c3));
+        Assert.assertEquals(0, fetchedStorage.componentAmount(c4));
     }
 }

@@ -11,20 +11,20 @@ import ru.spbpu.logic.Item;
 
 public class ItemMapper extends BasicMapper implements ItemAccessor {
 
-    ItemMapper(String url, AccessorRegistry registry) {
+    public ItemMapper(String url, AccessorRegistry registry) {
         super(url, registry);
     }
 
     @Override
-    Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException {
+    Entity parseResultSetEntry(ResultSet resultSet, String idColumn) throws ApplicationException {
         try {
-            int id = resultSet.getInt("id");
+            int id = resultSet.getInt(idColumn);
             int component_id = resultSet.getInt("component_id");
             int price = resultSet.getInt("price");
             int amount = resultSet.getInt("amount");
             Accessor componentAccessor = getRegistry().getAccessor(AccessorRegistry.RegistryKey.COMPONENT);
             Component component = (Component) componentAccessor.getById(component_id);
-            return new Item(component, amount, price, getRegistry());
+            return new Item(component, amount, price, id, getRegistry());
         } catch (SQLException e) {
             throw new ApplicationException(String.format("SQL exception: %s", e.getMessage()));
         }

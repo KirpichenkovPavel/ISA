@@ -1,5 +1,7 @@
 package ru.spbpu.logic;
 
+import ru.spbpu.exceptions.ApplicationException;
+
 public class ClientOrder extends Order {
 
     ClientOrder(Client from, AccessorRegistry registry) {
@@ -12,7 +14,7 @@ public class ClientOrder extends Order {
     }
 
     @Override
-    boolean canBeSubmitted(){
+    boolean canBeSubmitted() throws ApplicationException {
         if (getStatus() != OrderStatus.NEW)
             return false;
         Storage storage = getRegistry().getStorage();
@@ -24,7 +26,7 @@ public class ClientOrder extends Order {
     }
 
     @Override
-    boolean canBeAccepted () {
+    boolean canBeAccepted () throws ApplicationException {
         Storage storage = getRegistry().getStorage();
         if (getStatus() != OrderStatus.SUBMITTED)
             return false;

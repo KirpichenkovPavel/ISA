@@ -1,0 +1,1 @@
+INSERT INTO isa_storage (name) VALUES ('Storage');

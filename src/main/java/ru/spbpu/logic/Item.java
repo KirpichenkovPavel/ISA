@@ -5,13 +5,21 @@ public class Item extends Entity {
     private int price;
     private int amount;
 
+    public Item(Component component, int amount, int price, int id, AccessorRegistry registry) {
+        super(registry);
+        this.amount = amount;
+        this.component = component;
+        this.price = price;
+        this.setId(id);
+    }
+
     public Item(Component component, int amount, int price, AccessorRegistry registry) {
         super(registry);
         this.amount = amount;
         this.component = component;
         this.price = price;
     }
-    
+
     public Item(Component component, int amount, AccessorRegistry registry){
         super(registry);
         this.amount = amount;

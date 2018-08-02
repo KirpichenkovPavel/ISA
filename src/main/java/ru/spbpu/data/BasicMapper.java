@@ -4,7 +4,6 @@ import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.Accessor;
 import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Entity;
-import ru.spbpu.logic.Order;
 import ru.spbpu.util.Pair;
 
 import java.sql.*;
@@ -51,7 +50,11 @@ public abstract class BasicMapper implements Accessor {
         return registry;
     }
 
-    abstract Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException;
+    abstract Entity parseResultSetEntry(ResultSet resultSet, String idColumn) throws ApplicationException;
+
+    Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException {
+        return parseResultSetEntry(resultSet, "id");
+    }
 
     abstract Map<String, Object> getDatabaseFields(Entity entity);
 
@@ -84,21 +87,25 @@ public abstract class BasicMapper implements Accessor {
                 return null;
             }
             Entity entity = parseResultSetEntry(results);
-            for (Map.Entry<String, Pair<List<? extends Entity>, BasicMapper>> entry: getM2MFields(entity).entrySet()) {
-                String fieldName = entry.getKey();
-                Pair<List<? extends Entity>, BasicMapper> fieldPair = entry.getValue();
-                BasicMapper listEntityMapper = fieldPair.getSecond();
-                List<? extends Entity> relatedEntityList = getM2MList(id, listEntityMapper);
-                try {
-                    entity.setField(fieldName, relatedEntityList);
-                } catch (Exception ex) {
-                    throw new ApplicationException(ex.getMessage(), REFLECTION);
-                }
-            }
+            this.setM2Mfields(entity, id);
             return entity;
         }
         catch (SQLException ex) {
             throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
+        }
+    }
+
+    private void setM2Mfields(Entity entity, int id) throws ApplicationException {
+        for (Map.Entry<String, Pair<List<? extends Entity>, BasicMapper>> entry: getM2MFields(entity).entrySet()) {
+            String fieldName = entry.getKey();
+            Pair<List<? extends Entity>, BasicMapper> fieldPair = entry.getValue();
+            BasicMapper listEntityMapper = fieldPair.getSecond();
+            List<? extends Entity> relatedEntityList = getM2MList(id, listEntityMapper);
+            try {
+                entity.setField(fieldName, relatedEntityList);
+            } catch (Exception ex) {
+                throw new ApplicationException(ex.getMessage(), REFLECTION);
+            }
         }
     }
 
@@ -111,6 +118,7 @@ public abstract class BasicMapper implements Accessor {
             List<Entity> results = new ArrayList<>();
             while (resultSet.next()) {
                 Entity nextResult = parseResultSetEntry(resultSet);
+                setM2Mfields(nextResult, nextResult.getId());
                 results.add(nextResult);
             }
             return results;
@@ -136,7 +144,7 @@ public abstract class BasicMapper implements Accessor {
                 valuesPlaceholder.append(",?");
             }
         }
-        return String.format("INSERT INTO %s (%s) VALUES (%s) returning (id)",
+        return String.format("INSERT INTO %s (%s) VALUES (%s) RETURNING id",
                 getTableName(), fieldsNames.toString(), valuesPlaceholder.toString());
     }
 
@@ -223,7 +231,8 @@ public abstract class BasicMapper implements Accessor {
             selectListStatement.setInt(1, id);
             ResultSet resultSet = selectListStatement.executeQuery();
             while (resultSet.next()) {
-                Entity nextResult = listEntityMapper.parseResultSetEntry(resultSet);
+                String listEntityIdColumnName = String.format("%s_id", listEntityMapper.getTableNameBase());
+                Entity nextResult = listEntityMapper.parseResultSetEntry(resultSet, listEntityIdColumnName);
                 results.add(nextResult);
             }
             return results;
@@ -255,6 +264,8 @@ public abstract class BasicMapper implements Accessor {
                 preparedDeleteStatement.setInt(1, entityId);
                 preparedDeleteStatement.execute();
                 List<? extends Entity> actualList = listEntityPair.getFirst();
+                if (actualList.size() == 0)
+                    continue;
                 List<String> tmpList = new ArrayList<>();
                 for (int i = 0; i < actualList.size(); i++)
                     tmpList.add("(?, ?)");

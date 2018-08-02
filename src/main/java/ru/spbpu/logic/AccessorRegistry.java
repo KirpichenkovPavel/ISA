@@ -55,10 +55,6 @@ public class AccessorRegistry {
         return new Payment(from, to, amount, this);
     }
 
-//    public Payment newPayment(BaseUser from, BaseUser to, int amount, Payment.PaymentStatus status, int id) {
-//        return new Payment(from, to, amount, this);
-//    }
-
     public BaseUser newUser(String name, User.Role role) throws ApplicationException {
         switch (role) {
             case CLIENT:
@@ -76,7 +72,8 @@ public class AccessorRegistry {
         return new Component(name, this);
     }
 
-    public Storage getStorage() {
-        return Storage.getInstance(this);
+    public Storage getStorage() throws ApplicationException {
+        StorageAccessor accessor = (StorageAccessor)getAccessor(RegistryKey.STORAGE);
+        return accessor.getInstance();
     }
 }

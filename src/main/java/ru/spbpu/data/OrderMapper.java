@@ -19,7 +19,7 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
     }
 
     @Override
-    Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException {
+    Entity parseResultSetEntry(ResultSet resultSet, String idColumn) throws ApplicationException {
         try {
             int id = resultSet.getInt("id");
             String status = resultSet.getString("status");
@@ -31,7 +31,7 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             BaseUser from = (BaseUser) userAccessor.getById(from_id);
             BaseUser to = (BaseUser) userAccessor.getById(to_id);
             Payment payment = (Payment) paymentAccessor.getById(payment_id);
-            Order order = new Order(getRegistry());
+            Order order = new Order(getRegistry(), id);
             order.setFrom(from);
             order.setTo(to);
             order.setPayment(payment);
@@ -57,12 +57,6 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
         Integer paymentId = payment == null ? null : payment.getId();
         fieldMap.put("payment_id", paymentId);
         return fieldMap;
-    }
-
-    @Override
-    public Order getById(int id) throws ApplicationException {
-        Order order = (Order) super.getById(id);
-        return order;
     }
 
     @Override

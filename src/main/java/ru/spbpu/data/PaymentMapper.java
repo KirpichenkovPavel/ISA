@@ -2,12 +2,10 @@ package ru.spbpu.data;
 
 import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.*;
-import ru.spbpu.util.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class PaymentMapper extends BasicMapper implements PaymentAccessor {
@@ -17,7 +15,7 @@ public class PaymentMapper extends BasicMapper implements PaymentAccessor {
     }
 
     @Override
-    Entity parseResultSetEntry(ResultSet resultSet) throws ApplicationException {
+    Entity parseResultSetEntry(ResultSet resultSet, String idColumn) throws ApplicationException {
         try {
             int id = resultSet.getInt("id");
             int amount = resultSet.getInt("amount");

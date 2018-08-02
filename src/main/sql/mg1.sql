@@ -1,0 +1,1 @@
+ALTER TABLE isa_storage ADD name varchar(100);

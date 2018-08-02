@@ -7,19 +7,20 @@ import org.junit.Test;
 import ru.spbpu.data.*;
 import ru.spbpu.exceptions.ApplicationException;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 public class OrderTestSuit {
 
     private Manager manager;
     private Client client;
-    private Storage storage;
     private AccessorRegistry registry;
     private ComponentAccessor ca;
     private StorageAccessor sa;
     private ItemAccessor ia;
     private UserAccessor ua;
     private PaymentAccessor pa;
+    private OrderAccessor oa;
 
     private final int cpuAmountStart = 10;
     private final int gpuAmountStart = 7;
@@ -29,24 +30,41 @@ public class OrderTestSuit {
     private final int cpuPrice = 10000;
     private final int gpuPrice = 8000;
 
+    private void dropData() throws SQLException {
+        for (AccessorRegistry.RegistryKey key: AccessorRegistry.RegistryKey.values()) {
+            Accessor accessor = registry.getAccessor(key);
+            if (accessor instanceof BasicMapper) {
+                ((BasicMapper) accessor).dropData();
+            }
+        }
+    }
+
+    private Storage getStorage() throws ApplicationException {
+        return registry.getStorage();
+    }
 
     @Before
     public void setUp() throws ApplicationException{
 
+        String url = "jdbc:postgresql://localhost:5432/isa_test";
         registry = new AccessorRegistry();
-        registry.setUp(new ItemRepository(), new ComponentRepository(), new UserRepository(),
-                new StorageRepository(), new OrderRepository(), new PaymentRepository());
-        ca = (ComponentAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.COMPONENT);
-        sa = (StorageAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.STORAGE);
-        ia = (ItemAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.ITEM);
-        ua = (UserAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.USER);
-        pa = (PaymentAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.PAYMENT);
+        ia = new ItemMapper(url, registry);
+        ca = new ComponentMapper(url, registry);
+        ua = new UserMapper(url, registry);
+        sa = new StorageMapper(url, registry);
+        oa = new OrderMapper(url, registry);
+        pa = new PaymentMapper(url, registry);
+        registry.setUp(ia, ca, ua, sa, oa, pa);
+        try {
+            dropData();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
 
-        storage = registry.getStorage();
         client = (Client) registry.newUser("Client", User.Role.CLIENT);
         manager = (Manager) registry.newUser("Manager", User.Role.MANAGER);
-        
-        storage.create();
+        client.create();
+        manager.create();
 
         Component cpu = registry.newComponent("CPU");
         Component mem = registry.newComponent("Memory");
@@ -68,6 +86,7 @@ public class OrderTestSuit {
         ihdd.create();
         igpu.create();
 
+        Storage storage = getStorage();
         storage.addItem(icpu);
         storage.addItem(imem);
         storage.addItem(ihdd);
@@ -80,7 +99,6 @@ public class OrderTestSuit {
     public void tearDown() {
         manager = null;
         client = null;
-        storage = null;
         registry = null;
     }
 
@@ -111,8 +129,8 @@ public class OrderTestSuit {
         manager.setPrice(componentCpu, cpuPrice);
         manager.setPrice(componentGpu, gpuPrice);
 
-        Assert.assertEquals(cpuPrice, storage.componentPrice(componentCpu));
-        Assert.assertEquals(gpuPrice, storage.componentPrice(componentGpu));
+        Assert.assertEquals(cpuPrice, getStorage().componentPrice(componentCpu));
+        Assert.assertEquals(gpuPrice, getStorage().componentPrice(componentGpu));
 
         client.addItemToOrder(order, componentCpu, cpuInOrder);
         client.addItemToOrder(order, componentCpu, additionalCpuInOrder);
@@ -120,20 +138,20 @@ public class OrderTestSuit {
 
         cpuTotal = cpuInOrder + additionalCpuInOrder;
 
-        Assert.assertEquals(cpuAmountStart, storage.componentAmount(componentCpu));
-        Assert.assertEquals(cpuAmountStart, storage.componentAmount(componentCpu));
-        Assert.assertEquals(gpuAmountStart, storage.componentAmount(componentGpu));
+        Assert.assertEquals(cpuAmountStart, getStorage().componentAmount(componentCpu));
+        Assert.assertEquals(cpuAmountStart, getStorage().componentAmount(componentCpu));
+        Assert.assertEquals(gpuAmountStart, getStorage().componentAmount(componentGpu));
 
         client.submitOrder(order);
-        Assert.assertEquals(cpuAmountStart, storage.componentAmount(componentCpu));
-        Assert.assertEquals(gpuAmountStart, storage.componentAmount(componentGpu));
+        Assert.assertEquals(cpuAmountStart, getStorage().componentAmount(componentCpu));
+        Assert.assertEquals(gpuAmountStart, getStorage().componentAmount(componentGpu));
         Assert.assertEquals(Order.OrderStatus.SUBMITTED, order.getStatus());
 
         manager.acceptOrder(order);
         Assert.assertEquals(Order.OrderStatus.ACCEPTED, order.getStatus());
-        Assert.assertEquals(cpuAmountStart - cpuTotal, storage.componentAmount(componentCpu));
-        Assert.assertEquals(gpuAmountStart - gpuInOrder, storage.componentAmount(componentGpu));
-        Assert.assertEquals(hddAmountStart, storage.componentAmount(componentHdd));
+        Assert.assertEquals(cpuAmountStart - cpuTotal, getStorage().componentAmount(componentCpu));
+        Assert.assertEquals(gpuAmountStart - gpuInOrder, getStorage().componentAmount(componentGpu));
+        Assert.assertEquals(hddAmountStart, getStorage().componentAmount(componentHdd));
         Assert.assertNotEquals(null, order.getPayment());
         Assert.assertEquals(cpuTotal * cpuPrice + gpuInOrder * gpuPrice, order.getPayment().getAmount());
         Assert.assertEquals(Payment.PaymentStatus.OPEN, order.getPayment().getStatus());

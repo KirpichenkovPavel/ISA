@@ -29,6 +29,12 @@ public class Order extends Entity {
         this.items = new ArrayList<>();
     }
 
+    public Order (AccessorRegistry registry, int id) {
+        super(registry, id);
+        this.status = OrderStatus.NEW;
+        this.items = new ArrayList<>();
+    }
+
     public BaseUser getFrom() {
         return from;
     }
@@ -91,11 +97,11 @@ public class Order extends Entity {
                 .collect(Collectors.toList());
     }
 
-    boolean canBeSubmitted() {
+    boolean canBeSubmitted() throws ApplicationException {
         return true;
     };
 
-    boolean canBeAccepted() {
+    boolean canBeAccepted() throws ApplicationException {
         return true;
     };
 

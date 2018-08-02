@@ -35,4 +35,8 @@ public class Component extends Entity {
         return another.getName().equals(this.name);
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

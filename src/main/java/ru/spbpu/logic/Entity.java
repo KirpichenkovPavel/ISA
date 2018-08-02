@@ -9,10 +9,14 @@ public abstract class Entity {
 
     private int id;
     private AccessorRegistry registry;
-    private String AccessorRegistryKey;
 
     protected Entity(AccessorRegistry registry) {
         this.registry = registry;
+    }
+
+    protected Entity(AccessorRegistry registry, int id) {
+        this.registry = registry;
+        this.id = id;
     }
 
     protected abstract AccessorRegistry.RegistryKey accessorRegistryKey();

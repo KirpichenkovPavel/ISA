@@ -42,7 +42,7 @@ public class Client extends BaseUser implements User {
         Item newItem = this.getRegistry().newItem(component, amount);
         newItem.create();
         order.addItem(newItem);
-//        order.update();
+        order.update();
     }
 
     public void changeComponentAmountInOrder(Component component, Order order, int amount) throws ApplicationException {

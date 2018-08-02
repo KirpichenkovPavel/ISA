@@ -1,12 +1,7 @@
 package ru.spbpu.logic;
 
-public interface StorageAccessor extends Accessor {
+import ru.spbpu.exceptions.ApplicationException;
 
-//    void addItem(String name, int amount, int price, ComponentRepository cRep);
-//
-//    Map<Component, Item> getComponents();
-//
-//    List<Item> getItems();
-//
-//    void saveStorage(Map<Component, Item> components);
+public interface StorageAccessor extends Accessor {
+    Storage getInstance() throws ApplicationException;
 }
