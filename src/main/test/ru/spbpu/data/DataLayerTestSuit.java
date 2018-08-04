@@ -69,11 +69,23 @@ public class DataLayerTestSuit {
 
     @Test
     public void testAddUser() throws ApplicationException {
-        BaseUser manager = registry.newUser("test manager", User.Role.MANAGER);
+        BaseUser manager = registry.newUser("manager", User.Role.MANAGER);
         Assert.assertTrue(manager instanceof Manager);
         Assert.assertEquals(0, manager.getId());
         manager.create();
         Assert.assertNotEquals(0, manager.getId());
+
+        BaseUser client = registry.newUser("client", User.Role.CLIENT);
+        Assert.assertTrue(client instanceof Client);
+        Assert.assertEquals(0, client.getId());
+        client.create();
+        Assert.assertNotEquals(0, client.getId());
+
+        BaseUser provider = registry.newUser("provider", User.Role.PROVIDER);
+        Assert.assertTrue(provider instanceof Provider);
+        Assert.assertEquals(0, provider.getId());
+        provider.create();
+        Assert.assertNotEquals(0, provider.getId());
     }
 
     @Test

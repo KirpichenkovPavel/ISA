@@ -57,12 +57,12 @@ public class UserMapper extends BasicMapper implements UserAccessor {
             String roleStringLiteral = role.name();
             boolean withRole = role != User.Role.NONE;
             StringBuilder selectBuilder = (new StringBuilder())
-                    .append("SELECT u.id")
-                    .append("FROM isa_user u");
+                    .append("SELECT u.id ")
+                    .append("FROM isa_user u ");
             if (withRole)
                 selectBuilder
-                        .append("JOIN isa_user_role ur on u.id = ur.user_id")
-                        .append("JOIN isa_role r on r.id = ur.role_id");
+                        .append("JOIN isa_user_role ur on u.id = ur.user_id ")
+                        .append("JOIN isa_role r on r.id = ur.role_id ");
             selectBuilder.append("WHERE u.name = ? ");
             if (withRole)
                 selectBuilder.append("AND r.name = ?");

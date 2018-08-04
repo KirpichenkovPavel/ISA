@@ -1,19 +1,12 @@
 package ru.spbpu;
 
-import ru.spbpu.data.*;
-import ru.spbpu.logic.*;
+import ru.spbpu.frontend.Application;
+import ru.spbpu.util.Util.RunMode;
 
 class Entry {
 
-    static AccessorRegistry registry;
-    static ItemAccessor itemAccessor;
-    static ComponentAccessor componentAccessor;
-    static UserAccessor userAccessor;
-    static StorageAccessor storageAccessor;
-    static OrderAccessor orderAccessor;
-    static PaymentAccessor paymentAccessor;
-
-    public static void main(String[] args){
-        return;
+    public static void main(String[] args) {
+        Application app = new Application();
+        app.run(RunMode.DEBUG);
     }
 }

@@ -35,4 +35,15 @@ public class BaseUser extends Entity implements User {
         int newId = accessor.addUser(getName(), getRole());
         setId(newId);
     }
+
+    public boolean login() {
+        try {
+            UserAccessor accessor = (UserAccessor) getAccessor();
+            BaseUser user = accessor.getUser(this.getName(), this.getRole());
+            return user != null;
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
 }
