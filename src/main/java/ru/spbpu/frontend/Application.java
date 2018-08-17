@@ -5,6 +5,8 @@ import ru.spbpu.util.Util.RunMode;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class Application {
 
@@ -30,6 +32,10 @@ public class Application {
         manageForm(nextForm, JFrame.DISPOSE_ON_CLOSE, false);
     }
 
+    public JFrame getActiveFrame() {
+        return activeFrame;
+    }
+
     private void manageForm(BaseApplicationForm form, int onClose, boolean replacePrevious) {
         JFrame frame = new JFrame(form.getTitle());
         JPanel panel = form.createFormPanel();
@@ -48,6 +54,13 @@ public class Application {
             activeFrame.dispose();
         }
         activeFrame = frame;
+        frame.addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowGainedFocus(WindowEvent windowEvent) {
+                super.windowGainedFocus(windowEvent);
+                form.updateForm();
+            }
+        });
         frame.setVisible(true);
     }
 

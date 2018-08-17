@@ -5,6 +5,7 @@ import ru.spbpu.logic.*;
 import ru.spbpu.util.Pair;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 public class OrderMapper extends BasicMapper implements OrderAccessor {
+
+    private static final String CLIENT_TYPE = "CLIENT";
+    private static final String MANAGER_TYPE = "MANAGER";
 
     public OrderMapper(String url, AccessorRegistry registry) {
         super(url, registry);
@@ -26,12 +30,18 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             Integer from_id = resultSet.getInt("from_id");
             Integer to_id = resultSet.getInt("to_id");
             Integer payment_id = resultSet.getInt("payment_id");
+            String orderType = resultSet.getString("order_type");
             UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.USER);
             PaymentAccessor paymentAccessor = (PaymentAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.PAYMENT);
             BaseUser from = (BaseUser) userAccessor.getById(from_id);
             BaseUser to = (BaseUser) userAccessor.getById(to_id);
             Payment payment = (Payment) paymentAccessor.getById(payment_id);
-            Order order = new Order(getRegistry(), id);
+            Order order;
+            if (orderType.equals(CLIENT_TYPE)) {
+                order = new ClientOrder(from, getRegistry(), id);
+            } else {
+                order = new WholesaleOrder(from, to, getRegistry(), id);
+            }
             order.setFrom(from);
             order.setTo(to);
             order.setPayment(payment);
@@ -65,13 +75,57 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
     }
 
     @Override
-    public List<Order> getOrdersByUser(User user) {
-        return null;
+    public List<ClientOrder> getOrdersByClient(Client client) throws ApplicationException {
+        try(Connection connection = getConnection()) {
+            String statement = String.format((new StringBuilder())
+                    .append("SELECT * ")
+                    .append("FROM %s ")
+                    .append("WHERE order_type=? AND %s=?")
+                    .toString(), getTableName());
+            PreparedStatement preparedStatement = connection.prepareStatement(statement);
+            preparedStatement.setString(1, CLIENT_TYPE);
+            preparedStatement.setInt(2, client.getId());
+            List<ClientOrder> resultOrders = new ArrayList<>();
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                ClientOrder nextOrder = (ClientOrder) parseResultSetEntry(resultSet);
+                resultOrders.add(nextOrder);
+            }
+            return resultOrders;
+        } catch (SQLException ex) {
+            throw new ApplicationException(String.format("SQL exception: %s", ex.getMessage()));
+        }
     }
 
     @Override
-    public List<Order> getOrdersByTargetUser(User user) {
-        return null;
+    public List<? extends Order> getOrdersBySourceUser(BaseUser user) throws ApplicationException {
+        return getOrdersBySomeUser(user, "from_id");
+    }
+
+    @Override
+    public List<? extends Order> getOrdersByTargetUser(BaseUser user) throws ApplicationException {
+        return getOrdersBySomeUser(user, "to_id");
+    }
+
+    private List<Order> getOrdersBySomeUser(BaseUser user, String userIdFieldName) throws ApplicationException{
+        try(Connection connection = getConnection()) {
+            String statement = String.format((new StringBuilder())
+                    .append("SELECT * ")
+                    .append("FROM %s ")
+                    .append("WHERE %s=?")
+                    .toString(), getTableName(), userIdFieldName);
+            PreparedStatement preparedStatement = connection.prepareStatement(statement);
+            preparedStatement.setInt(1, user.getId());
+            List<Order> resultOrders = new ArrayList<>();
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Order nextOrder = (Order) parseResultSetEntry(resultSet);
+                resultOrders.add(nextOrder);
+            }
+            return resultOrders;
+        } catch (SQLException ex) {
+            throw new ApplicationException(String.format("SQL exception: %s", ex.getMessage()));
+        }
     }
 
     @Override

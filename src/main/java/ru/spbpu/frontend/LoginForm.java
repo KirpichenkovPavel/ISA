@@ -14,16 +14,24 @@ public class LoginForm extends BaseApplicationForm {
 
     public LoginForm(Application app) {
         super(app);
-        roleSelector.addItem(new RoleComboBoxItem("MANAGER", "Manager"));
-        roleSelector.addItem(new RoleComboBoxItem("PROVIDER", "Provider"));
-        roleSelector.addItem(new RoleComboBoxItem("CLIENT", "Client"));
+        initRoleSelector();
+        initLoginButton();
+    }
+
+    private void initRoleSelector() {
+        roleSelector.addItem(new ComboBoxItem<String>("MANAGER", "Manager"));
+        roleSelector.addItem(new ComboBoxItem<String>("PROVIDER", "Provider"));
+        roleSelector.addItem(new ComboBoxItem<String>("CLIENT", "Client"));
+    }
+
+    private void initLoginButton() {
         loginButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
                 String loginString = loginInput.getText();
                 String passwordString = new String(passwordInput.getPassword());
-                RoleComboBoxItem selectedRole = (RoleComboBoxItem)roleSelector.getSelectedItem();
+                ComboBoxItem<String> selectedRole = (ComboBoxItem<String>)roleSelector.getSelectedItem();
                 if (selectedRole != null && getService().login(loginString, passwordString, selectedRole.getValue())) {
                     switch (selectedRole.getValue()) {
                         case "MANAGER":

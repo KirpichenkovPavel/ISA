@@ -2,10 +2,16 @@ package ru.spbpu.logic;
 
 public class WholesaleOrder extends Order {
 
-    WholesaleOrder(Manager manager, Provider to, AccessorRegistry registry) {
+    public WholesaleOrder(BaseUser manager, BaseUser provider, AccessorRegistry registry) {
         super(registry);
         this.setFrom(manager);
-        this.setTo(to);
+        this.setTo(provider);
+    }
+
+    public WholesaleOrder(BaseUser manager, BaseUser provider, AccessorRegistry registry, int id) {
+        super(registry, id);
+        this.setFrom(manager);
+        this.setTo(provider);
     }
 
     public Manager getManager() {

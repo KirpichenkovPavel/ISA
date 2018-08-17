@@ -34,4 +34,6 @@ public abstract class BaseApplicationForm {
     abstract String getTitle();
 
     abstract Dimension getSize();
+
+    public void updateForm() {}
 }

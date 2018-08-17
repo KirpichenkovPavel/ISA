@@ -1,5 +1,8 @@
 package ru.spbpu.logic;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Provider extends BaseUser implements User {
 
     Provider(String name, AccessorRegistry registry) {
@@ -9,6 +12,10 @@ public class Provider extends BaseUser implements User {
     @Override
     public Role getRole() {
         return Role.PROVIDER;
+    }
+
+    public List<Item> getItems() {
+        return new ArrayList<>();
     }
 
 }

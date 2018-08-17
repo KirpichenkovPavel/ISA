@@ -4,8 +4,13 @@ import ru.spbpu.exceptions.ApplicationException;
 
 public class ClientOrder extends Order {
 
-    ClientOrder(Client from, AccessorRegistry registry) {
+    public ClientOrder(BaseUser from, AccessorRegistry registry) {
         super(registry);
+        this.setFrom(from);
+    }
+
+    public ClientOrder(BaseUser from, AccessorRegistry registry, int id) {
+        super(registry, id);
         this.setFrom(from);
     }
 

@@ -2,13 +2,9 @@ package ru.spbpu.frontend;
 
 import ru.spbpu.util.Pair;
 
-public class RoleComboBoxItem extends Pair<String, String> {
+public class ComboBoxItem<KeyType> extends Pair<KeyType, String> {
 
-    RoleComboBoxItem() {
-        super("", "");
-    }
-
-    RoleComboBoxItem(String key, String visibleString) {
+    ComboBoxItem(KeyType key, String visibleString) {
         super(key, visibleString);
     }
 
@@ -17,7 +13,7 @@ public class RoleComboBoxItem extends Pair<String, String> {
         return getSecond();
     }
 
-    public String getValue() {
+    public KeyType getValue() {
         return getFirst();
     }
 }

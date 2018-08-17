@@ -91,4 +91,14 @@ public class Client extends BaseUser implements User {
                 throw new ApplicationException("Can't cancel order in current status", ApplicationException.Type.ORDER_STATUS);
         }
     }
+
+    public List<ClientOrder> getOrders() {
+        OrderAccessor orderAccessor = (OrderAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.ORDER);
+        try {
+            return (List<ClientOrder>)orderAccessor.getOrdersBySourceUser(this);
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 }
