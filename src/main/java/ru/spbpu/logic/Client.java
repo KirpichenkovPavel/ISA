@@ -93,9 +93,10 @@ public class Client extends BaseUser implements User {
     }
 
     public List<ClientOrder> getOrders() {
-        OrderAccessor orderAccessor = (OrderAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.ORDER);
+//        OrderAccessor orderAccessor = (OrderAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.ORDER);
+        OrderAccessor orderAccessor = (OrderAccessor) getRegistry().getAccessor(Order.class);
         try {
-            return (List<ClientOrder>)orderAccessor.getOrdersBySourceUser(this);
+            return orderAccessor.getOrdersByClient(this);
         } catch (ApplicationException ex) {
             ex.printStackTrace();
             return new ArrayList<>();

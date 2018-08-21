@@ -32,8 +32,8 @@ public class Payment extends Entity {
     }
 
     @Override
-    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
-        return AccessorRegistry.RegistryKey.PAYMENT;
+    protected Class accessorRegistryKey() {
+        return Payment.class;
     }
 
     public void setPaid() {

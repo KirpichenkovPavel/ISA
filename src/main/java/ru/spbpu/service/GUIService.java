@@ -1,17 +1,17 @@
 package ru.spbpu.service;
 
+import org.javatuples.Quartet;
+import org.javatuples.Triplet;
 import ru.spbpu.data.*;
 import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.frontend.Application;
 import ru.spbpu.logic.*;
-import ru.spbpu.util.Pair;
 import ru.spbpu.util.Util.RunMode;
 import ru.spbpu.logic.User.Role;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ru.spbpu.logic.AccessorRegistry.RegistryKey.COMPONENT;
 import static ru.spbpu.logic.Order.OrderStatus.NEW;
 import static ru.spbpu.logic.User.Role.CLIENT;
 import static ru.spbpu.logic.User.Role.MANAGER;
@@ -29,12 +29,12 @@ public class GUIService {
         REPOSITORY
     }
 
-    public void setUp(DataLayer dataLayer, RunMode testMode) {
+    public void setUp(DataLayer dataLayer, RunMode runMode) {
         registry = new AccessorRegistry();
         switch (dataLayer) {
             case DB:
                 StringBuilder urlBuilder = new StringBuilder("jdbc:postgresql://localhost:5432/isa");
-                if (testMode == RunMode.DEBUG) {
+                if (runMode == RunMode.DEBUG) {
                     urlBuilder.append("_test");
                 }
                 String url = urlBuilder.toString();
@@ -142,15 +142,21 @@ public class GUIService {
         }
     }
 
-    public List<Pair<Integer, String>> getClientOrdersList() {
+    public List<Triplet<Integer, String, String>> getActiveClientOrdersList() {
         Client client = getActiveClient();
         if (client != null) {
             return client
                     .getOrders()
                     .stream()
-                    .map(clientOrder ->
-                            new Pair<>(clientOrder.getId(), clientOrder.getStatus().toString()))
-                    .filter(integerStringPair -> !integerStringPair.getSecond().equals(NEW.name()))
+                    .filter(clientOrder -> !clientOrder.getStatus().equals(NEW))
+                    .map(clientOrder -> {
+                        String items = clientOrder.getItems().stream()
+                                .map(item ->
+                                        String.format("%s(%s)", item.getComponent().getName(), item.getAmount()))
+                                .collect(Collectors.joining(", "));
+                                return Triplet.with(clientOrder.getId(), items, clientOrder.getStatus().toString());
+                            }
+                    )
                     .collect(Collectors.toList());
         } else {
             return new ArrayList<>();
@@ -174,13 +180,13 @@ public class GUIService {
     }
 
     private Component getComponentByName(String name) throws ApplicationException {
-        ComponentAccessor componentAccessor = (ComponentAccessor) registry.getAccessor(COMPONENT);
+        ComponentAccessor componentAccessor = (ComponentAccessor) registry.getAccessor(Component.class);
         Optional<Component> component = componentAccessor.getByName(name);
         return component.orElse(null);
     }
 
     private Component getComponentById(Integer id) throws ApplicationException {
-        ComponentAccessor componentAccessor = (ComponentAccessor) registry.getAccessor(COMPONENT);
+        ComponentAccessor componentAccessor = (ComponentAccessor) registry.getAccessor(Component.class);
         return (Component) componentAccessor.getById(id);
     }
 
@@ -228,7 +234,7 @@ public class GUIService {
 
     public Map<String, Integer> getStoragePrices() {
         Map<String, Integer> priceMap = new HashMap<>();
-        ComponentAccessor componentAccessor = (ComponentAccessor) registry.getAccessor(COMPONENT);
+        ComponentAccessor componentAccessor = (ComponentAccessor) registry.getAccessor(Component.class);
         try {
             List<Component> components = (List<Component>)componentAccessor.getAll();
             for (Component c: components) {
@@ -274,7 +280,28 @@ public class GUIService {
         } catch (ApplicationException ex) {
             ex.printStackTrace();
         }
+    }
 
+    public List<Quartet<Integer, String, String, String>> getAllClientOrders() {
+        List<Quartet<Integer, String, String, String>> results = new ArrayList<>();
+        try {
+            OrderAccessor orderAccessor = (OrderAccessor) registry.getAccessor(Order.class);
+            for (ClientOrder order: orderAccessor.getAllClientOrders()) {
+                switch (order.getStatus()) {
+                    case SUBMITTED:
+                    case PAID:
+                        results.add(Quartet.with(order.getId(),
+                                order.getFrom().getName(),
+                                "items",
+                                order.getStatus().name()));
+                        default:
+                            break;
+                }
+            }
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+        }
+        return results;
     }
 
 }

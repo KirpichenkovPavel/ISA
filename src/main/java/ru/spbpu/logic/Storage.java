@@ -31,8 +31,8 @@ public class Storage extends Entity {
     }
 
     @Override
-    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
-        return AccessorRegistry.RegistryKey.STORAGE;
+    protected Class accessorRegistryKey() {
+        return Storage.class;
     }
 
     public boolean componentExists(Component component) {

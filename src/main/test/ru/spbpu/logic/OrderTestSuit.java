@@ -31,12 +31,12 @@ public class OrderTestSuit {
     private final int gpuPrice = 8000;
 
     private void dropData() throws SQLException {
-        for (AccessorRegistry.RegistryKey key: AccessorRegistry.RegistryKey.values()) {
-            Accessor accessor = registry.getAccessor(key);
-            if (accessor instanceof BasicMapper) {
-                ((BasicMapper) accessor).dropData();
-            }
-        }
+//        for (AccessorRegistry.RegistryKey key: AccessorRegistry.RegistryKey.values()) {
+//            Accessor accessor = registry.getAccessor(key);
+//            if (accessor instanceof BasicMapper) {
+//                ((BasicMapper) accessor).dropData();
+//            }
+//        }
     }
 
     private Storage getStorage() throws ApplicationException {

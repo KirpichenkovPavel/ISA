@@ -1,9 +1,5 @@
 package ru.spbpu.logic;
 
-import ru.spbpu.data.ComponentRepository;
-
-import java.util.Optional;
-
 public class Component extends Entity {
     private String name;
 
@@ -19,8 +15,8 @@ public class Component extends Entity {
     }
 
     @Override
-    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
-        return AccessorRegistry.RegistryKey.COMPONENT;
+    protected Class accessorRegistryKey() {
+        return Component.class;
     }
 
     public String getName(){

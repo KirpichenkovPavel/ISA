@@ -20,8 +20,8 @@ public class BaseUser extends Entity implements User {
         return this.name;
     }
 
-    public AccessorRegistry.RegistryKey accessorRegistryKey() {
-        return AccessorRegistry.RegistryKey.USER;
+    public Class accessorRegistryKey() {
+        return BaseUser.class;
     }
 
     @Override

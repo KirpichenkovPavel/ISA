@@ -31,11 +31,14 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             Integer to_id = resultSet.getInt("to_id");
             Integer payment_id = resultSet.getInt("payment_id");
             String orderType = resultSet.getString("order_type");
-            UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.USER);
-            PaymentAccessor paymentAccessor = (PaymentAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.PAYMENT);
-            BaseUser from = (BaseUser) userAccessor.getById(from_id);
-            BaseUser to = (BaseUser) userAccessor.getById(to_id);
-            Payment payment = (Payment) paymentAccessor.getById(payment_id);
+            UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(BaseUser.class);
+            PaymentAccessor paymentAccessor = (PaymentAccessor) getRegistry().getAccessor(Payment.class);
+//            BaseUser from = (BaseUser) userAccessor.getById(from_id);
+//            BaseUser to = (BaseUser) userAccessor.getById(to_id);
+//            Payment payment = (Payment) paymentAccessor.getById(payment_id);
+            ForeignKey<BaseUser> from = new ForeignKey<>(from_id, userAccessor);
+            ForeignKey<BaseUser> to = new ForeignKey<>(to_id, userAccessor);
+            ForeignKey<Payment> payment = new ForeignKey<>(payment_id, paymentAccessor);
             Order order;
             if (orderType.equals(CLIENT_TYPE)) {
                 order = new ClientOrder(from, getRegistry(), id);
@@ -80,7 +83,7 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             String statement = String.format((new StringBuilder())
                     .append("SELECT * ")
                     .append("FROM %s ")
-                    .append("WHERE order_type=? AND %s=?")
+                    .append("WHERE order_type=? AND from_id=?")
                     .toString(), getTableName());
             PreparedStatement preparedStatement = connection.prepareStatement(statement);
             preparedStatement.setString(1, CLIENT_TYPE);
@@ -89,6 +92,7 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 ClientOrder nextOrder = (ClientOrder) parseResultSetEntry(resultSet);
+                this.setM2Mfields(nextOrder, nextOrder.getId());
                 resultOrders.add(nextOrder);
             }
             return resultOrders;
@@ -97,12 +101,10 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
         }
     }
 
-    @Override
     public List<? extends Order> getOrdersBySourceUser(BaseUser user) throws ApplicationException {
         return getOrdersBySomeUser(user, "from_id");
     }
 
-    @Override
     public List<? extends Order> getOrdersByTargetUser(BaseUser user) throws ApplicationException {
         return getOrdersBySomeUser(user, "to_id");
     }
@@ -132,8 +134,52 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
     Map<String, Pair<List<? extends Entity>, BasicMapper>> getM2MFields(Entity entity) {
         Map<String, Pair<List<? extends Entity>, BasicMapper>> m2mFields = new HashMap<>();
         Order order = (Order) entity;
-        BasicMapper itemMapper = (ItemMapper) getRegistry().getAccessor(AccessorRegistry.RegistryKey.ITEM);
+        BasicMapper itemMapper = (ItemMapper) getRegistry().getAccessor(Item.class);
         m2mFields.put("items", new Pair<>(order.getItems(), itemMapper));
         return m2mFields;
+    }
+
+    public List<ClientOrder> getAllClientOrders() throws ApplicationException {
+        try(Connection connection = getConnection()) {
+            String statement = String.format((new StringBuilder())
+                    .append("SELECT * ")
+                    .append("FROM %s ")
+                    .append("WHERE order_type=?")
+                    .toString(), getTableName());
+            PreparedStatement preparedStatement = connection.prepareStatement(statement);
+            preparedStatement.setString(1, CLIENT_TYPE);
+            List<ClientOrder> resultOrders = new ArrayList<>();
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                ClientOrder nextOrder = (ClientOrder) parseResultSetEntry(resultSet);
+                this.setM2Mfields(nextOrder, nextOrder.getId());
+                resultOrders.add(nextOrder);
+            }
+            return resultOrders;
+        } catch (SQLException ex) {
+            throw new ApplicationException(String.format("SQL exception: %s", ex.getMessage()));
+        }
+    }
+
+    public List<WholesaleOrder> getAllWholesaleOrders() throws ApplicationException {
+        try(Connection connection = getConnection()) {
+            String statement = String.format((new StringBuilder())
+                    .append("SELECT * ")
+                    .append("FROM %s ")
+                    .append("WHERE order_type=?")
+                    .toString(), getTableName());
+            PreparedStatement preparedStatement = connection.prepareStatement(statement);
+            preparedStatement.setString(1, MANAGER_TYPE);
+            List<WholesaleOrder> resultOrders = new ArrayList<>();
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                WholesaleOrder nextOrder = (WholesaleOrder) parseResultSetEntry(resultSet);
+                this.setM2Mfields(nextOrder, nextOrder.getId());
+                resultOrders.add(nextOrder);
+            }
+            return resultOrders;
+        } catch (SQLException ex) {
+            throw new ApplicationException(String.format("SQL exception: %s", ex.getMessage()));
+        }
     }
 }

@@ -7,36 +7,38 @@ import java.util.Map;
 
 public class AccessorRegistry {
 
-    private Map<RegistryKey, Accessor> registry;
+    private Map<Class, Accessor> registry;
 
-    public enum RegistryKey {
-        ITEM,
-        COMPONENT,
-        USER,
-        STORAGE,
-        ORDER,
-        PAYMENT,
-    }
+//    public enum RegistryKey {
+//        ITEM,
+//        COMPONENT,
+//        USER,
+//        STORAGE,
+//        ORDER,
+//        PAYMENT,
+//    }
 
     public AccessorRegistry(){}
 
     public void setUp(ItemAccessor ia, ComponentAccessor ca, UserAccessor ua, StorageAccessor sa,
                       OrderAccessor oa, PaymentAccessor pa) {
         registry = new HashMap<>();
-        registry.put(RegistryKey.ITEM, ia);
-        registry.put(RegistryKey.COMPONENT, ca);
-        registry.put(RegistryKey.USER, ua);
-        registry.put(RegistryKey.STORAGE, sa);
-        registry.put(RegistryKey.ORDER, oa);
-        registry.put(RegistryKey.PAYMENT, pa);
+        registry.put(Item.class, ia);
+        registry.put(Component.class, ca);
+        registry.put(BaseUser.class, ua);
+        registry.put(Storage.class, sa);
+        registry.put(Order.class, oa);
+        registry.put(Payment.class, pa);
     }
 
-    public Accessor getAccessor(RegistryKey key) {
+    public Accessor getAccessor(Class key) {
         return registry.get(key);
     }
 
     public Item newItem(Component component, int amount, int price) {
-        return new Item(component, amount, price, this);
+        ForeignKey<Component> componentForeignKey = new ForeignKey<>(component);
+        return new Item(componentForeignKey, amount, price, this);
+
     }
 
     public Item newItem(Component component, int amount) {
@@ -44,11 +46,12 @@ public class AccessorRegistry {
     }
 
     public ClientOrder newOrder(Client from) {
-        return new ClientOrder(from,this);
+        return new ClientOrder(new ForeignKey<>(from),this);
     }
 
     public WholesaleOrder newWholesaleOrder(Manager from, Provider to) {
-        return new WholesaleOrder(from, to, this);
+        return new WholesaleOrder(new ForeignKey<>(from), new ForeignKey<>(to), this);
+
     }
 
     public Payment newPayment(BaseUser from, BaseUser to, int amount) {
@@ -73,7 +76,7 @@ public class AccessorRegistry {
     }
 
     public Storage getStorage() throws ApplicationException {
-        StorageAccessor accessor = (StorageAccessor)getAccessor(RegistryKey.STORAGE);
+        StorageAccessor accessor = (StorageAccessor)getAccessor(Storage.class);
         return accessor.getInstance();
     }
 }

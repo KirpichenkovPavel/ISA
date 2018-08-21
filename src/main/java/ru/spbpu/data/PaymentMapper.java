@@ -22,7 +22,7 @@ public class PaymentMapper extends BasicMapper implements PaymentAccessor {
             String status = resultSet.getString("status");
             int from_id = resultSet.getInt("from_id");
             int to_id = resultSet.getInt("to_id");
-            UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.USER);
+            UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(User.class);
             BaseUser from = (BaseUser) userAccessor.getById(from_id);
             BaseUser to = (BaseUser) userAccessor.getById(to_id);
             return new Payment(from, to, amount, Payment.PaymentStatus.valueOf(status), id, getRegistry());

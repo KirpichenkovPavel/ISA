@@ -1,11 +1,13 @@
 package ru.spbpu.logic;
 
+import ru.spbpu.exceptions.ApplicationException;
+
 public class Item extends Entity {
-    private Component component;
+    private ForeignKey<Component> component;
     private int price;
     private int amount;
 
-    public Item(Component component, int amount, int price, int id, AccessorRegistry registry) {
+    public Item(ForeignKey<Component> component, int amount, int price, int id, AccessorRegistry registry) {
         super(registry);
         this.amount = amount;
         this.component = component;
@@ -13,22 +15,26 @@ public class Item extends Entity {
         this.setId(id);
     }
 
-    public Item(Component component, int amount, int price, AccessorRegistry registry) {
+    public Item(ForeignKey<Component> component, int amount, int price, AccessorRegistry registry) {
         super(registry);
         this.amount = amount;
         this.component = component;
         this.price = price;
     }
 
-    public Item(Component component, int amount, AccessorRegistry registry){
+    public Item(ForeignKey<Component> component, int amount, AccessorRegistry registry){
         super(registry);
         this.amount = amount;
         this.component = component;
         this.price = 0;
     }
 
-    public Component getComponent() {
-        return component;
+    public Component getComponent() throws ApplicationException {
+        return (Component) component.getEntity();
+    }
+
+    public int getComponentId() {
+        return component.getId();
     }
 
     public int getAmount() {
@@ -48,7 +54,7 @@ public class Item extends Entity {
     }
 
     @Override
-    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
-        return AccessorRegistry.RegistryKey.ITEM;
+    protected Class accessorRegistryKey() {
+        return Item.class;
     }
 }

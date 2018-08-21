@@ -4,6 +4,7 @@ import ru.spbpu.exceptions.ApplicationException;
 import ru.spbpu.logic.Accessor;
 import ru.spbpu.logic.AccessorRegistry;
 import ru.spbpu.logic.Entity;
+import ru.spbpu.util.LoggingConnection;
 import ru.spbpu.util.Pair;
 
 import java.sql.*;
@@ -28,7 +29,8 @@ public abstract class BasicMapper implements Accessor {
         props.setProperty("user","isa");
         props.setProperty("password","isa");
         props.setProperty("ssl","true");
-        connection = DriverManager.getConnection(url, props);
+        connection = new LoggingConnection(DriverManager.getConnection(url, props), "/tmp/papo-dblog.log");
+//        connection = DriverManager.getConnection(url, props);
     }
 
     protected Connection getConnection() throws SQLException {
@@ -95,7 +97,7 @@ public abstract class BasicMapper implements Accessor {
         }
     }
 
-    private void setM2Mfields(Entity entity, int id) throws ApplicationException {
+    protected void setM2Mfields(Entity entity, int id) throws ApplicationException {
         for (Map.Entry<String, Pair<List<? extends Entity>, BasicMapper>> entry: getM2MFields(entity).entrySet()) {
             String fieldName = entry.getKey();
             Pair<List<? extends Entity>, BasicMapper> fieldPair = entry.getValue();

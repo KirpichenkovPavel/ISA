@@ -26,7 +26,7 @@ public class Manager extends BaseUser implements User {
         Payment payment = getRegistry().newPayment(order.getClient(), this, order.totalPrice());
         payment.create();
         order.setStatus(Order.OrderStatus.ACCEPTED);
-        order.setPayment(payment);
+        order.setPayment(new ForeignKey<>(payment));
         order.update();
 
     }

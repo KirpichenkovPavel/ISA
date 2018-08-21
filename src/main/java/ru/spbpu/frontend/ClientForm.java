@@ -1,11 +1,8 @@
 package ru.spbpu.frontend;
 
+import org.javatuples.Triplet;
 import ru.spbpu.service.StorageItem;
-import ru.spbpu.util.Pair;
-
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
@@ -38,7 +35,7 @@ public class ClientForm extends BaseApplicationForm{
 
     @Override
     String getTitle() {
-        return String.format("PC assembly: (client %s)", getService().activeUserName());
+        return String.format("PC assembly: user %s (client)", getService().activeUserName());
     }
 
     @Override
@@ -51,7 +48,6 @@ public class ClientForm extends BaseApplicationForm{
         priceMap = getService().getStoragePrices();
         initChangeUserButton();
         initOrdersTable();
-        initAddOrderButton();
         initAddItemButton();
         initNewOrderTable();
         initRemoveItemButton();
@@ -70,37 +66,31 @@ public class ClientForm extends BaseApplicationForm{
         });
     }
 
-    private void initAddOrderButton() {
-        btnCreateOrder.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                super.mouseClicked(mouseEvent);
-                getService().addClientOrder();
-                initOrdersTable();
-            }
-        });
-    }
-
     private void initOrdersTable() {
-        List<Pair<Integer, String>> clientOrders = getService().getClientOrdersList();
+        List<Triplet<Integer, String, String>> clientOrders = getService().getActiveClientOrdersList();
         TableModel tableModel = new AbstractTableModel() {
             @Override
             public int getRowCount() {
-                return clientOrders.size();
+                return clientOrders.size() + 1;
             }
 
             @Override
             public int getColumnCount() {
-                return 2;
+                return 3;
             }
 
             @Override
             public Object getValueAt(int i, int j) {
-                Pair<Integer, String> row = clientOrders.get(i);
-                if (j == 0) {
-                    return row.getFirst();
+                if (i == 0) {
+                    switch (j) {
+                        case 0: return "Order number";
+                        case 1: return "Items";
+                        case 2: return "Status";
+                    }
+                    return "";
                 } else {
-                    return row.getSecond();
+                    Triplet<Integer, String, String> row = clientOrders.get(i - 1);
+                    return row.getValue(j);
                 }
             }
         };
@@ -159,7 +149,6 @@ public class ClientForm extends BaseApplicationForm{
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
-                System.out.println("click");
                 int selectedRow = newOrderTable.getSelectedRow();
                 if (selectedRow > 0 && selectedRow < newOrderTable.getRowCount()) {
                     selectedItemName = newOrderTable.getValueAt(selectedRow, 0).toString();

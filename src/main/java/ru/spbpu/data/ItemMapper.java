@@ -22,8 +22,10 @@ public class ItemMapper extends BasicMapper implements ItemAccessor {
             int component_id = resultSet.getInt("component_id");
             int price = resultSet.getInt("price");
             int amount = resultSet.getInt("amount");
-            Accessor componentAccessor = getRegistry().getAccessor(AccessorRegistry.RegistryKey.COMPONENT);
-            Component component = (Component) componentAccessor.getById(component_id);
+//            Accessor componentAccessor = getRegistry().getAccessor(AccessorRegistry.RegistryKey.COMPONENT);
+//            Component component = (Component) componentAccessor.getById(component_id);
+            ForeignKey<Component> component = new ForeignKey<Component>(component_id,
+                    getRegistry().getAccessor(Component.class));
             return new Item(component, amount, price, id, getRegistry());
         } catch (SQLException e) {
             throw new ApplicationException(String.format("SQL exception: %s", e.getMessage()));
@@ -34,7 +36,7 @@ public class ItemMapper extends BasicMapper implements ItemAccessor {
     Map<String, Object> getDatabaseFields(Entity entity) {
         Map<String, Object> fieldMap = new HashMap<>();
         Item item = (Item) entity;
-        fieldMap.put("component_id", item.getComponent().getId());
+        fieldMap.put("component_id", item.getComponentId());
         fieldMap.put("amount", item.getAmount());
         fieldMap.put("price", item.getPrice());
         return fieldMap;

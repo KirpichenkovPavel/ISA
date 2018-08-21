@@ -19,9 +19,9 @@ public class Order extends Entity {
 
     private OrderStatus status;
     private List<Item> items;
-    private Payment payment;
-    private BaseUser from;
-    private BaseUser to;
+    private ForeignKey<Payment> payment;
+    private ForeignKey<BaseUser> from;
+    private ForeignKey<BaseUser> to;
 
     public Order (AccessorRegistry registry) {
         super(registry);
@@ -36,26 +36,26 @@ public class Order extends Entity {
     }
 
     public BaseUser getFrom() {
-        return from;
+        return (BaseUser) from.getEntity();
     }
 
     public BaseUser getTo() {
-        return to;
+        return (BaseUser) to.getEntity();
     }
 
-    public void setFrom(BaseUser from) {
+    public void setFrom(ForeignKey<BaseUser> from) {
         this.from = from;
     }
 
-    public void setTo(BaseUser to) {
+    public void setTo(ForeignKey<BaseUser> to) {
         this.to = to;
     }
 
     public Payment getPayment() {
-        return this.payment;
+        return (Payment) this.payment.getEntity();
     }
 
-    public void setPayment(Payment payment) {
+    public void setPayment(ForeignKey<Payment> payment) {
         this.payment = payment;
     }
 
@@ -72,13 +72,13 @@ public class Order extends Entity {
     }
 
     @Override
-    protected AccessorRegistry.RegistryKey accessorRegistryKey() {
-        return AccessorRegistry.RegistryKey.ORDER;
+    protected Class accessorRegistryKey() {
+        return Order.class;
     }
 
     public OrderStatus getStatus() {return status;}
 
-    void addItem(Item newItem) {
+    void addItem(Item newItem) throws ApplicationException {
         for (Item i: items) {
             if (i.getComponent().equals(newItem.getComponent())){
                 i.setAmount(i.getAmount() + newItem.getAmount());
@@ -110,6 +110,7 @@ public class Order extends Entity {
     }
 
     boolean canBeDone() {
+        Payment payment = this.getPayment();
         return payment != null
                 && payment.getStatus() == Payment.PaymentStatus.COMPLETE
                 && status == OrderStatus.PAID;
@@ -142,9 +143,10 @@ public class Order extends Entity {
     }
 
     void cancelPayment() throws ApplicationException {
-        if (payment != null){
-            payment.cancel();
-            payment.update();
+        Payment p = getPayment();
+        if (p != null){
+            p.cancel();
+            p.update();
         }
     }
 }

@@ -1,6 +1,6 @@
 package ru.spbpu.exceptions;
 
-public class ApplicationException extends Exception {
+public class ApplicationException extends RuntimeException {
 
     private Type type;
 

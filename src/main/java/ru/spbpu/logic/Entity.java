@@ -3,7 +3,6 @@ package ru.spbpu.logic;
 import ru.spbpu.exceptions.ApplicationException;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
 public abstract class Entity {
 
@@ -19,7 +18,7 @@ public abstract class Entity {
         this.id = id;
     }
 
-    protected abstract AccessorRegistry.RegistryKey accessorRegistryKey();
+    protected abstract Class accessorRegistryKey();
 
     protected Accessor getAccessor() {
         return registry.getAccessor(accessorRegistryKey());
@@ -51,7 +50,18 @@ public abstract class Entity {
 
     public void setField(String fieldName, Object value)
             throws NoSuchFieldException, IllegalAccessException {
-        Field field = getClass().getDeclaredField(fieldName);
+        Class clazz = getClass();
+        Field field = null;
+        while (clazz != Entity.class) {
+            try {
+                field = clazz.getDeclaredField(fieldName);
+                break;
+            } catch (NoSuchFieldException ex) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        if (field == null)
+            throw new NoSuchFieldException(fieldName);
         field.setAccessible(true);
         field.set(this, value);
     }

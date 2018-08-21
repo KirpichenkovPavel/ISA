@@ -41,12 +41,12 @@ public class DataLayerTestSuit {
     }
 
     private void dropData() throws SQLException {
-        for (AccessorRegistry.RegistryKey key: AccessorRegistry.RegistryKey.values()) {
-            Accessor accessor = registry.getAccessor(key);
-            if (accessor instanceof BasicMapper) {
-                ((BasicMapper) accessor).dropData();
-            }
-        }
+//        for (AccessorRegistry.RegistryKey key: AccessorRegistry.RegistryKey.values()) {
+//            Accessor accessor = registry.getAccessor(key);
+//            if (accessor instanceof BasicMapper) {
+//                ((BasicMapper) accessor).dropData();
+//            }
+//        }
     }
 
     @After
@@ -100,7 +100,7 @@ public class DataLayerTestSuit {
         Assert.assertEquals(0, payment.getId());
         payment.create();
         Assert.assertNotEquals(0, payment.getId());
-        PaymentAccessor pa = (PaymentAccessor) registry.getAccessor(AccessorRegistry.RegistryKey.PAYMENT);
+        PaymentAccessor pa = (PaymentAccessor) registry.getAccessor(Payment.class);
         Payment fetchedPayment = (Payment) pa.getById(payment.getId());
         Assert.assertEquals(payment.getAmount(), fetchedPayment.getAmount());
         Assert.assertEquals(payment.getSourceUser().getId(), fetchedPayment.getSourceUser().getId());

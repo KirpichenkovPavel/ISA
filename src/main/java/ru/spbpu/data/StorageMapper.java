@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class StorageMapper extends BasicMapper implements StorageAccessor {
 
+    private Storage cachedStorage;
+
     public StorageMapper(String url, AccessorRegistry registry) {
         super(url, registry);
     }
@@ -45,13 +47,16 @@ public class StorageMapper extends BasicMapper implements StorageAccessor {
     Map<String, Pair<List<? extends Entity>, BasicMapper>> getM2MFields(Entity entity) {
         Map<String, Pair<List<? extends Entity>, BasicMapper>> m2mFields = new HashMap<>();
         Storage storage = (Storage) entity;
-        BasicMapper itemMapper = (ItemMapper) getRegistry().getAccessor(AccessorRegistry.RegistryKey.ITEM);
+        BasicMapper itemMapper = (ItemMapper) getRegistry().getAccessor(Item.class);
         m2mFields.put("items", new Pair<>(storage.getItems(), itemMapper));
         return m2mFields;
     }
 
     @Override
     public Storage getInstance() throws ApplicationException {
+        if (cachedStorage != null) {
+            return cachedStorage;
+        }
         List allRecords = getAll();
         if (allRecords.size() > 1) {
             System.out.println(">1");
@@ -62,7 +67,8 @@ public class StorageMapper extends BasicMapper implements StorageAccessor {
             storage.create();
             return storage;
         }
-        return (Storage) allRecords.get(0);
+        cachedStorage = (Storage) allRecords.get(0);
+        return cachedStorage;
     }
 
     @Override
