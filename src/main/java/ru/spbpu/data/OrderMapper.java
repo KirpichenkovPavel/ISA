@@ -33,9 +33,6 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             String orderType = resultSet.getString("order_type");
             UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(BaseUser.class);
             PaymentAccessor paymentAccessor = (PaymentAccessor) getRegistry().getAccessor(Payment.class);
-//            BaseUser from = (BaseUser) userAccessor.getById(from_id);
-//            BaseUser to = (BaseUser) userAccessor.getById(to_id);
-//            Payment payment = (Payment) paymentAccessor.getById(payment_id);
             ForeignKey<BaseUser> from = new ForeignKey<>(from_id, userAccessor);
             ForeignKey<BaseUser> to = new ForeignKey<>(to_id, userAccessor);
             ForeignKey<Payment> payment = new ForeignKey<>(payment_id, paymentAccessor);

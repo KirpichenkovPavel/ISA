@@ -93,7 +93,6 @@ public class Client extends BaseUser implements User {
     }
 
     public List<ClientOrder> getOrders() {
-//        OrderAccessor orderAccessor = (OrderAccessor) getRegistry().getAccessor(AccessorRegistry.RegistryKey.ORDER);
         OrderAccessor orderAccessor = (OrderAccessor) getRegistry().getAccessor(Order.class);
         try {
             return orderAccessor.getOrdersByClient(this);

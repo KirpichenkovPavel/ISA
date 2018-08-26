@@ -55,7 +55,7 @@ public class AccessorRegistry {
     }
 
     public Payment newPayment(BaseUser from, BaseUser to, int amount) {
-        return new Payment(from, to, amount, this);
+        return new Payment(new ForeignKey<>(from), new ForeignKey<>(to), amount, this);
     }
 
     public BaseUser newUser(String name, User.Role role) throws ApplicationException {

@@ -7,13 +7,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Stack;
 
 public class Application {
 
-    private JFrame activeFrame;
+    private Stack<JFrame> frameStack;
     private GUIService service;
 
-    public Application() {}
+    public Application() {
+        frameStack = new Stack<>();
+    }
 
     public GUIService getService() {
         return service;
@@ -33,7 +36,7 @@ public class Application {
     }
 
     public JFrame getActiveFrame() {
-        return activeFrame;
+        return frameStack.peek();
     }
 
     private void manageForm(BaseApplicationForm form, int onClose, boolean replacePrevious) {
@@ -51,14 +54,22 @@ public class Application {
         }
         frame.setResizable(false);
         if (replacePrevious) {
-            activeFrame.dispose();
+            getActiveFrame().dispose();
+            frameStack.pop();
         }
-        activeFrame = frame;
+        frameStack.push(frame);
         frame.addWindowFocusListener(new WindowAdapter() {
             @Override
             public void windowGainedFocus(WindowEvent windowEvent) {
                 super.windowGainedFocus(windowEvent);
                 form.updateForm();
+            }
+        });
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                super.windowClosing(windowEvent);
+                frameStack.pop();
             }
         });
         frame.setVisible(true);

@@ -23,8 +23,10 @@ public class PaymentMapper extends BasicMapper implements PaymentAccessor {
             int from_id = resultSet.getInt("from_id");
             int to_id = resultSet.getInt("to_id");
             UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(User.class);
-            BaseUser from = (BaseUser) userAccessor.getById(from_id);
-            BaseUser to = (BaseUser) userAccessor.getById(to_id);
+//            BaseUser from = (BaseUser) userAccessor.getById(from_id);
+//            BaseUser to = (BaseUser) userAccessor.getById(to_id);
+            ForeignKey<BaseUser> from = new ForeignKey<>(from_id, userAccessor);
+            ForeignKey<BaseUser> to = new ForeignKey<>(to_id, userAccessor);
             return new Payment(from, to, amount, Payment.PaymentStatus.valueOf(status), id, getRegistry());
         } catch (SQLException e) {
             throw new ApplicationException(String.format("SQL exception: %s", e.getMessage()));

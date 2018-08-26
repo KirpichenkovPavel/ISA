@@ -2,8 +2,8 @@ package ru.spbpu.logic;
 
 public class Payment extends Entity {
 
-    private BaseUser from;
-    private BaseUser to;
+    private ForeignKey<BaseUser> from;
+    private ForeignKey<BaseUser> to;
     private int amount;
     private PaymentStatus status;
 
@@ -14,7 +14,7 @@ public class Payment extends Entity {
         CANCELED
     }
 
-    Payment(BaseUser from, BaseUser to, int amount, AccessorRegistry registry) {
+    Payment(ForeignKey<BaseUser> from, ForeignKey<BaseUser> to, int amount, AccessorRegistry registry) {
         super(registry);
         this.from = from;
         this.to = to;
@@ -22,7 +22,7 @@ public class Payment extends Entity {
         this.status = PaymentStatus.OPEN;
     }
 
-    public Payment(BaseUser from, BaseUser to, int amount, PaymentStatus status, int id, AccessorRegistry registry) {
+    public Payment(ForeignKey<BaseUser> from, ForeignKey<BaseUser> to, int amount, PaymentStatus status, int id, AccessorRegistry registry) {
         super(registry);
         this.from = from;
         this.to = to;
@@ -53,11 +53,11 @@ public class Payment extends Entity {
     }
 
     public BaseUser getSourceUser() {
-        return from;
+        return (BaseUser) from.getEntity();
     }
 
     public BaseUser getTargetUser() {
-        return to;
+        return (BaseUser) to.getEntity();
     }
 
     public int getAmount() {

@@ -88,13 +88,13 @@ public class GUIService {
                     return activeUser;
                 }
             case MANAGER:
-                if (!(activeUser instanceof Client)) {
+                if (!(activeUser instanceof Manager)) {
                     return null;
                 } else {
                     return activeUser;
                 }
             case PROVIDER:
-                if (!(activeUser instanceof Client)) {
+                if (!(activeUser instanceof Provider)) {
                     return null;
                 } else {
                     return activeUser;
@@ -290,9 +290,15 @@ public class GUIService {
                 switch (order.getStatus()) {
                     case SUBMITTED:
                     case PAID:
+                        List<Item> items = order.getItems();
+                        String itemsStr = items
+                                .stream()
+                                .map(item ->
+                                        String.format("%s(%s)", item.getComponent().getName(), item.getAmount()))
+                                .collect(Collectors.joining(", "));
                         results.add(Quartet.with(order.getId(),
                                 order.getFrom().getName(),
-                                "items",
+                                itemsStr,
                                 order.getStatus().name()));
                         default:
                             break;
@@ -304,4 +310,50 @@ public class GUIService {
         return results;
     }
 
+    public boolean cancelClientOrder(Integer id) {
+        if (id == null)
+            return false;
+        try {
+            OrderAccessor accessor = (OrderAccessor) registry.getAccessor(Order.class);
+            ClientOrder order = (ClientOrder) accessor.getById(id);
+            if (order == null)
+                return false;
+            getActiveManager().cancelOrder(order);
+            order.update();
+            return true;
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean acceptClientOrder (Integer id) {
+        if (id == null)
+            return false;
+        try {
+            OrderAccessor accessor = (OrderAccessor) registry.getAccessor(Order.class);
+            ClientOrder order = (ClientOrder) accessor.getById(id);
+            if (order == null)
+                return false;
+            getActiveManager().acceptOrder(order);
+            order.update();
+            return true;
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Triplet<Integer, Integer, String>> getActiveClientPayments() {
+        Client client = getActiveClient();
+        List<ClientOrder> orders = client.getOrders();
+        List<Triplet<Integer, Integer, String>> payments = new ArrayList<>();
+        for (ClientOrder order: orders) {
+            Payment payment = order.getPayment();
+            if (payment != null) {
+                payments.add(Triplet.with(order.getId(), payment.getAmount() , payment.getStatus().name()));
+            }
+        }
+        return payments;
+    }
 }

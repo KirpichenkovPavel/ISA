@@ -24,6 +24,9 @@ public class ClientForm extends BaseApplicationForm{
     private JButton addItemButton;
     private JButton submitButton;
     private JButton discardButton;
+    private JTable clientPaymentsTable;
+    private JButton makePaymentButton;
+    private JButton cancelButton;
     private String selectedItemName;
     private Map<String, Integer> priceMap;
 
@@ -53,6 +56,7 @@ public class ClientForm extends BaseApplicationForm{
         initRemoveItemButton();
         initDiscardButton();
         initSubmitButton();
+        initClientPaymentsTable();
     }
 
     private void initChangeUserButton() {
@@ -199,5 +203,34 @@ public class ClientForm extends BaseApplicationForm{
     @Override
     public void updateForm() {
         initNewOrderTable();
+    }
+
+    private void initClientPaymentsTable() {
+        List<Triplet<Integer, Integer, String>> payments = getService().getActiveClientPayments();
+        clientPaymentsTable.setModel(new AbstractTableModel() {
+            @Override
+            public int getRowCount() {
+                return payments.size() + 1;
+            }
+
+            @Override
+            public int getColumnCount() {
+                return 3;
+            }
+
+            @Override
+            public Object getValueAt(int i, int j) {
+                if (i == 0) {
+                    switch (j){
+                        case 0: return "Order number";
+                        case 1: return "Amount";
+                        case 2: return "Payment status";
+                    }
+                } else {
+                    return payments.get(i - 1).getValue(j);
+                }
+                return null;
+            }
+        });
     }
 }

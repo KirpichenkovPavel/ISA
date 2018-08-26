@@ -14,8 +14,8 @@ public class ClientOrder extends Order {
         this.setFrom(from);
     }
 
-    Client getClient() {
-        return (Client) getFrom();
+    BaseUser getClient() {
+        return getFrom();
     }
 
     @Override

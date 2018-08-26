@@ -6,8 +6,10 @@ public class ForeignKey<EntityClass extends Entity> {
     private Entity entity;
     private int id;
     private Accessor accessor;
-//    private Class<EntityClass> clazz;
-//    private AccessorRegistry registry;
+
+    public ForeignKey() {
+
+    }
 
     public ForeignKey(EntityClass entity) {
         this.entity = entity;
@@ -17,15 +19,16 @@ public class ForeignKey<EntityClass extends Entity> {
     public ForeignKey(int id, Accessor accessor) {
         this.id = id;
         this.accessor = accessor;
-//        this.registry = registry;
-//        this.clazz = clazz;
     }
 
     public Entity getEntity() throws ApplicationException {
         if (entity != null) {
             return entity;
+        } else if (accessor != null && id != 0) {
+            entity = accessor.getById(id);
+            return entity;
         } else {
-            return accessor.getById(id);
+            return null;
         }
     }
 

@@ -27,12 +27,18 @@ public class Order extends Entity {
         super(registry);
         this.status = OrderStatus.NEW;
         this.items = new ArrayList<>();
+        this.from = new ForeignKey<>();
+        this.to = new ForeignKey<>();
+        this.payment = new ForeignKey<>();
     }
 
     public Order (AccessorRegistry registry, int id) {
         super(registry, id);
         this.status = OrderStatus.NEW;
         this.items = new ArrayList<>();
+        this.from = new ForeignKey<>();
+        this.to = new ForeignKey<>();
+        this.payment = new ForeignKey<>();
     }
 
     public BaseUser getFrom() {
@@ -40,7 +46,10 @@ public class Order extends Entity {
     }
 
     public BaseUser getTo() {
-        return (BaseUser) to.getEntity();
+        if (to != null)
+            return (BaseUser) to.getEntity();
+        else
+            return null;
     }
 
     public void setFrom(ForeignKey<BaseUser> from) {

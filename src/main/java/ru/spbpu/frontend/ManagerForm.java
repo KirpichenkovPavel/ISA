@@ -16,6 +16,9 @@ public class ManagerForm extends BaseApplicationForm{
     private JButton changeUserButton;
     private JTabbedPane tabbedPane1;
     private JTable clientOrdersTable;
+    private JButton cancelClientOrderButton;
+    private JButton acceptClientOrderButton;
+    private Integer selectedClientOrderId;
 
     @Override
     JPanel createFormPanel() {
@@ -36,6 +39,8 @@ public class ManagerForm extends BaseApplicationForm{
         super(app);
         initChangeUserButton();
         initClientOrdersTable();
+        initCancelClientOrderButton();
+        initAcceptClientOrderButton();
     }
 
     private void initChangeUserButton() {
@@ -78,5 +83,49 @@ public class ManagerForm extends BaseApplicationForm{
             }
         };
         clientOrdersTable.setModel(tableModel);
+        clientOrdersTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                super.mouseClicked(mouseEvent);
+                int selectedRow = clientOrdersTable.getSelectedRow();
+                if (selectedRow > 0 && selectedRow < clientOrdersTable.getRowCount()) {
+                    selectedClientOrderId = (Integer) clientOrdersTable.getValueAt(selectedRow, 0);
+                } else {
+                    selectedClientOrderId = null;
+                }
+            }
+        });
+    }
+
+    private void initCancelClientOrderButton() {
+        cancelClientOrderButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                super.mouseClicked(mouseEvent);
+                if (selectedClientOrderId != null) {
+                    if (getService().cancelClientOrder(selectedClientOrderId)) {
+                        initClientOrdersTable();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Cancel unsuccessful");
+                    }
+                }
+            }
+        });
+    }
+
+    private void initAcceptClientOrderButton() {
+        acceptClientOrderButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                super.mouseClicked(mouseEvent);
+                if (selectedClientOrderId != null) {
+                    if (getService().acceptClientOrder(selectedClientOrderId)) {
+                        initClientOrdersTable();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Accept was unsuccessful");
+                    }
+                }
+            }
+        });
     }
 }
