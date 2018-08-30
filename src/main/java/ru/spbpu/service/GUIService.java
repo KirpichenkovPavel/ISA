@@ -1,5 +1,6 @@
 package ru.spbpu.service;
 
+import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import ru.spbpu.data.*;
@@ -12,6 +13,7 @@ import ru.spbpu.logic.User.Role;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.spbpu.logic.Order.OrderStatus.DONE;
 import static ru.spbpu.logic.Order.OrderStatus.NEW;
 import static ru.spbpu.logic.User.Role.CLIENT;
 import static ru.spbpu.logic.User.Role.MANAGER;
@@ -355,5 +357,78 @@ public class GUIService {
             }
         }
         return payments;
+    }
+
+    public void makePayment(Integer orderId) {
+        try{
+            Client client = getActiveClient();
+            OrderAccessor accessor = (OrderAccessor) registry.getAccessor(Order.class);
+            ClientOrder order = (ClientOrder) accessor.getById(orderId);
+            client.payForOrder(order);
+            order.update();
+        } catch(ApplicationException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void cancelOrderByClient(Integer orderId) {
+        try{
+            Client client = getActiveClient();
+            OrderAccessor accessor = (OrderAccessor) registry.getAccessor(Order.class);
+            ClientOrder order = (ClientOrder) accessor.getById(orderId);
+            client.cancelOrder(order);
+            order.update();
+        } catch(ApplicationException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public boolean executeClientOrder(Integer id) {
+        try {
+            OrderAccessor accessor = (OrderAccessor) registry.getAccessor(Order.class);
+            ClientOrder order = (ClientOrder) accessor.getById(id);
+            if (order != null) {
+                getActiveManager().executeOrder(order);
+                order.update();
+                return true;
+            }
+            return false;
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Pair<Integer, String>> getCompleteClientOrders() {
+        try {
+            Client client = getActiveClient();
+            List<Pair<Integer, String>> orders = new ArrayList<>();
+            for (ClientOrder order: client.getOrders()) {
+                if (order.getStatus() == DONE) {
+                    String itemsStr = order.getItems()
+                            .stream()
+                            .map(item ->
+                                    String.format("%s(%s)", item.getComponent().getName(), item.getAmount()))
+                            .collect(Collectors.joining(", "));
+                    orders.add(Pair.with(order.getId(), itemsStr));
+                }
+            }
+            return orders;
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public void acceptCompleteOrder(Integer orderId) {
+        try {
+            Client client = getActiveClient();
+            OrderAccessor accessor = (OrderAccessor) registry.getAccessor(Order.class);
+            ClientOrder order = (ClientOrder) accessor.getById(orderId);
+            client.closeCompleteOrder(order);
+            order.update();
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+        }
     }
 }

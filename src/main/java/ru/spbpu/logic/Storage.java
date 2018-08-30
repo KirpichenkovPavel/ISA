@@ -7,18 +7,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Storage extends Entity {
-    private List<Item> items;
+    private RelatedList<Item> items;
     private String name;
 
     public Storage(AccessorRegistry registry) {
         super(registry);
-        items = new ArrayList<>();
+        items = new RelatedList<>(this, registry.getAccessor(Storage.class), registry.getAccessor(Item.class));
         this.name = "Storage";
     }
 
     public Storage(AccessorRegistry registry, String name, int id) {
         super(registry, id);
-        items = new ArrayList<>();
+        items = new RelatedList<>(this, registry.getAccessor(Storage.class), registry.getAccessor(Item.class));
         this.name = name;
     }
 
@@ -27,7 +27,11 @@ public class Storage extends Entity {
     }
 
     public List<Item> getItems() {
-        return items;
+        return items.getListItems();
+    }
+
+    public void setItems(List<Item> updatedItems) {
+        this.items = new RelatedList<>(updatedItems);
     }
 
     @Override
@@ -36,25 +40,21 @@ public class Storage extends Entity {
     }
 
     public boolean componentExists(Component component) {
-        return items.stream().anyMatch(item -> item.getComponent().equals(component));
+        return getItems().stream().anyMatch(item -> item.getComponent().equals(component));
     }
 
     private Item getItemByComponent(Component component) {
-        for (Item i: items) {
+        for (Item i: getItems()) {
             if (i.getComponent().equals(component))
                 return i;
         }
         return null;
-//        Optional<Item> match = items.stream().filter(item -> item.getComponent().equals(component)).findFirst();
-//        return match.orElse(null);
     }
 
     private void updateItem(Item newItem) {
-        List<Item> filteredItems = items.stream()
+        getItems().stream()
                 .filter(item -> !item.getComponent().equals(newItem.getComponent()))
-                .collect(Collectors.toList());
-        filteredItems.add(newItem);
-        items = filteredItems;
+                .collect(Collectors.toList()).add(newItem);
     }
 
     public void addItem(Item newItem) {
@@ -103,6 +103,8 @@ public class Storage extends Entity {
         if (componentExists(component)){
             throw new ApplicationException("Component does not exist", Type.STORAGE);
         }
-        items = items.stream().filter(item -> item.getComponent() != component).collect(Collectors.toList());
+        setItems(getItems().stream()
+                .filter(item -> item.getComponent() != component)
+                .collect(Collectors.toList()));
     }
 }

@@ -78,9 +78,6 @@ public class Client extends BaseUser implements User {
                 order.setStatus(Order.OrderStatus.CANCELED);
                 break;
             case ACCEPTED:
-                order.returnItemsToStorage();
-                order.setStatus(Order.OrderStatus.CANCELED);
-                break;
             case PAID:
             case DONE:
                 order.cancelPayment();

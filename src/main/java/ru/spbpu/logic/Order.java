@@ -1,7 +1,6 @@
 package ru.spbpu.logic;
 
 import ru.spbpu.exceptions.ApplicationException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +17,7 @@ public class Order extends Entity {
     }
 
     private OrderStatus status;
-    private List<Item> items;
+    private RelatedList<Item> items;
     private ForeignKey<Payment> payment;
     private ForeignKey<BaseUser> from;
     private ForeignKey<BaseUser> to;
@@ -26,7 +25,7 @@ public class Order extends Entity {
     public Order (AccessorRegistry registry) {
         super(registry);
         this.status = OrderStatus.NEW;
-        this.items = new ArrayList<>();
+        this.items = new RelatedList<>(this, getAccessor(), getRegistry().getAccessor(Item.class));
         this.from = new ForeignKey<>();
         this.to = new ForeignKey<>();
         this.payment = new ForeignKey<>();
@@ -35,7 +34,7 @@ public class Order extends Entity {
     public Order (AccessorRegistry registry, int id) {
         super(registry, id);
         this.status = OrderStatus.NEW;
-        this.items = new ArrayList<>();
+        this.items = new RelatedList<>(this, getAccessor(), getRegistry().getAccessor(Item.class));
         this.from = new ForeignKey<>();
         this.to = new ForeignKey<>();
         this.payment = new ForeignKey<>();
@@ -73,11 +72,11 @@ public class Order extends Entity {
     }
 
     public List<Item> getItems() {
-        return items;
+        return items.getListItems();
     }
 
     public void setItems(List<Item> items) {
-        this.items = items;
+        this.items = new RelatedList<>(items);
     }
 
     @Override
@@ -88,7 +87,7 @@ public class Order extends Entity {
     public OrderStatus getStatus() {return status;}
 
     void addItem(Item newItem) throws ApplicationException {
-        for (Item i: items) {
+        for (Item i: getItems()) {
             if (i.getComponent().equals(newItem.getComponent())){
                 i.setAmount(i.getAmount() + newItem.getAmount());
                 return;
@@ -98,12 +97,13 @@ public class Order extends Entity {
     }
 
     void changeAmount(Component component, int newAmount) {
-        items = items.stream()
+        setItems(getItems().stream()
                 .peek(item -> {
                     if (item.getComponent().equals(component))
                         item.setAmount(newAmount);
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+        );
     }
 
     boolean canBeSubmitted() throws ApplicationException {
@@ -135,7 +135,7 @@ public class Order extends Entity {
 
     int totalPrice() {
         int total = 0;
-        for (Item item: items) {
+        for (Item item: getItems()) {
             total += item.getPrice() * item.getAmount();
         }
         return total;
@@ -145,7 +145,7 @@ public class Order extends Entity {
 
     void returnItemsToStorage() throws ApplicationException{
         Storage storage = getRegistry().getStorage();
-        for (Item i: items) {
+        for (Item i: getItems()) {
             storage.addItem(i);
         }
         storage.update();

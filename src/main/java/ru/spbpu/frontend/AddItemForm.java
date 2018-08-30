@@ -34,6 +34,7 @@ public class AddItemForm extends BaseApplicationForm{
         super(app);
         initItemsList();
         initOKButton();
+        initAmountChooser();
     }
 
     private void initItemsList() {
@@ -56,5 +57,10 @@ public class AddItemForm extends BaseApplicationForm{
                 activeFrame.dispatchEvent(new WindowEvent(activeFrame, WindowEvent.WINDOW_CLOSING));
             }
         });
+    }
+
+    private void initAmountChooser() {
+        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 1000000, 1);
+        componentAmount.setModel(spinnerModel);
     }
 }

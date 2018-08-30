@@ -41,7 +41,6 @@ public class Manager extends BaseUser implements User {
         if (!(order.getStatus() == Order.OrderStatus.PAID))
             throw new ApplicationException("Order is not paid", ApplicationException.Type.ORDER_STATUS);
         order.setStatus(Order.OrderStatus.DONE);
-        order.update();
     }
 
     public void cancelOrder(ClientOrder order) throws ApplicationException {

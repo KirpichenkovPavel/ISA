@@ -9,15 +9,6 @@ public class AccessorRegistry {
 
     private Map<Class, Accessor> registry;
 
-//    public enum RegistryKey {
-//        ITEM,
-//        COMPONENT,
-//        USER,
-//        STORAGE,
-//        ORDER,
-//        PAYMENT,
-//    }
-
     public AccessorRegistry(){}
 
     public void setUp(ItemAccessor ia, ComponentAccessor ca, UserAccessor ua, StorageAccessor sa,

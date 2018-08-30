@@ -89,7 +89,6 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 ClientOrder nextOrder = (ClientOrder) parseResultSetEntry(resultSet);
-                this.setM2Mfields(nextOrder, nextOrder.getId());
                 resultOrders.add(nextOrder);
             }
             return resultOrders;
@@ -149,7 +148,6 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 ClientOrder nextOrder = (ClientOrder) parseResultSetEntry(resultSet);
-                this.setM2Mfields(nextOrder, nextOrder.getId());
                 resultOrders.add(nextOrder);
             }
             return resultOrders;
@@ -171,7 +169,6 @@ public class OrderMapper extends BasicMapper implements OrderAccessor {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 WholesaleOrder nextOrder = (WholesaleOrder) parseResultSetEntry(resultSet);
-                this.setM2Mfields(nextOrder, nextOrder.getId());
                 resultOrders.add(nextOrder);
             }
             return resultOrders;

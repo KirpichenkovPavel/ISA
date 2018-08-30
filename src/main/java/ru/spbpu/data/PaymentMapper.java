@@ -22,9 +22,7 @@ public class PaymentMapper extends BasicMapper implements PaymentAccessor {
             String status = resultSet.getString("status");
             int from_id = resultSet.getInt("from_id");
             int to_id = resultSet.getInt("to_id");
-            UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(User.class);
-//            BaseUser from = (BaseUser) userAccessor.getById(from_id);
-//            BaseUser to = (BaseUser) userAccessor.getById(to_id);
+            UserAccessor userAccessor = (UserAccessor) getRegistry().getAccessor(BaseUser.class);
             ForeignKey<BaseUser> from = new ForeignKey<>(from_id, userAccessor);
             ForeignKey<BaseUser> to = new ForeignKey<>(to_id, userAccessor);
             return new Payment(from, to, amount, Payment.PaymentStatus.valueOf(status), id, getRegistry());
@@ -37,9 +35,17 @@ public class PaymentMapper extends BasicMapper implements PaymentAccessor {
     Map<String, Object> getDatabaseFields(Entity entity) {
         Map<String, Object> fieldMap = new HashMap<>();
         Payment payment = (Payment) entity;
+        BaseUser from = payment.getSourceUser();
+        BaseUser to = payment.getTargetUser();
+        Object from_id = null;
+        Object to_id = null;
+        if (from != null)
+            from_id = from.getId();
+        if (to != null)
+            to_id = to.getId();
         fieldMap.put("amount", payment.getAmount());
-        fieldMap.put("from_id", payment.getSourceUser().getId());
-        fieldMap.put("to_id", payment.getTargetUser().getId());
+        fieldMap.put("from_id", from_id);
+        fieldMap.put("to_id", to_id);
         fieldMap.put("status", payment.getStatus().name());
         return fieldMap;
     }

@@ -18,6 +18,7 @@ public class ManagerForm extends BaseApplicationForm{
     private JTable clientOrdersTable;
     private JButton cancelClientOrderButton;
     private JButton acceptClientOrderButton;
+    private JButton setDoneButton;
     private Integer selectedClientOrderId;
 
     @Override
@@ -41,6 +42,7 @@ public class ManagerForm extends BaseApplicationForm{
         initClientOrdersTable();
         initCancelClientOrderButton();
         initAcceptClientOrderButton();
+        initSetDoneButton();
     }
 
     private void initChangeUserButton() {
@@ -95,6 +97,7 @@ public class ManagerForm extends BaseApplicationForm{
                 }
             }
         });
+        clientOrdersTable.setTableHeader(null);
     }
 
     private void initCancelClientOrderButton() {
@@ -123,6 +126,22 @@ public class ManagerForm extends BaseApplicationForm{
                         initClientOrdersTable();
                     } else {
                         JOptionPane.showMessageDialog(null, "Accept was unsuccessful");
+                    }
+                }
+            }
+        });
+    }
+
+    private void initSetDoneButton() {
+        setDoneButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                super.mouseClicked(mouseEvent);
+                if (selectedClientOrderId != null) {
+                    if (getService().executeClientOrder(selectedClientOrderId)) {
+                        initClientOrdersTable();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Operation was unsuccessful");
                     }
                 }
             }

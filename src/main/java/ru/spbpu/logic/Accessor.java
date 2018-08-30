@@ -15,4 +15,6 @@ public interface Accessor {
     int updateObject(Entity object) throws ApplicationException;
 
     AccessorRegistry getRegistry();
+
+    List<? extends Entity> getRelatedList(int id, Accessor accessor) throws ApplicationException;
 }

@@ -10,8 +10,6 @@ import ru.spbpu.util.Pair;
 import java.sql.*;
 import java.util.*;
 
-import static ru.spbpu.exceptions.ApplicationException.Type.REFLECTION;
-
 public abstract class BasicMapper implements Accessor {
 
     private String url;
@@ -30,7 +28,6 @@ public abstract class BasicMapper implements Accessor {
         props.setProperty("password","isa");
         props.setProperty("ssl","true");
         connection = new LoggingConnection(DriverManager.getConnection(url, props), "/tmp/papo-dblog.log");
-//        connection = DriverManager.getConnection(url, props);
     }
 
     protected Connection getConnection() throws SQLException {
@@ -89,25 +86,10 @@ public abstract class BasicMapper implements Accessor {
                 return null;
             }
             Entity entity = parseResultSetEntry(results);
-            this.setM2Mfields(entity, id);
             return entity;
         }
         catch (SQLException ex) {
             throw new ApplicationException("SQL exception: " + ex.getMessage(), ApplicationException.Type.SQL);
-        }
-    }
-
-    protected void setM2Mfields(Entity entity, int id) throws ApplicationException {
-        for (Map.Entry<String, Pair<List<? extends Entity>, BasicMapper>> entry: getM2MFields(entity).entrySet()) {
-            String fieldName = entry.getKey();
-            Pair<List<? extends Entity>, BasicMapper> fieldPair = entry.getValue();
-            BasicMapper listEntityMapper = fieldPair.getSecond();
-            List<? extends Entity> relatedEntityList = getM2MList(id, listEntityMapper);
-            try {
-                entity.setField(fieldName, relatedEntityList);
-            } catch (Exception ex) {
-                throw new ApplicationException(ex.getMessage(), REFLECTION);
-            }
         }
     }
 
@@ -120,7 +102,6 @@ public abstract class BasicMapper implements Accessor {
             List<Entity> results = new ArrayList<>();
             while (resultSet.next()) {
                 Entity nextResult = parseResultSetEntry(resultSet);
-                setM2Mfields(nextResult, nextResult.getId());
                 results.add(nextResult);
             }
             return results;
@@ -214,7 +195,12 @@ public abstract class BasicMapper implements Accessor {
         }
     }
 
-    protected List<Entity> getM2MList(int id, BasicMapper listEntityMapper) throws ApplicationException {
+    public List<? extends Entity> getRelatedList(int id, Accessor accessor) throws ApplicationException {
+        BasicMapper listEntityMapper = (BasicMapper) accessor;
+        return getRelatedList(id, listEntityMapper);
+    }
+
+    public List<? extends Entity> getRelatedList(int id, BasicMapper listEntityMapper) throws ApplicationException {
         try (Connection connection = getConnection()){
             List<Entity> results = new ArrayList<>();
             String firstTable = getTableName();
