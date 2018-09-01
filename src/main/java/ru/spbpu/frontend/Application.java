@@ -32,7 +32,8 @@ public class Application {
     }
 
     public void openForm(BaseApplicationForm nextForm) {
-        manageForm(nextForm, JFrame.DISPOSE_ON_CLOSE, false);
+        if (frameStack.size() < 2)
+            manageForm(nextForm, JFrame.DISPOSE_ON_CLOSE, false);
     }
 
     public JFrame getActiveFrame() {

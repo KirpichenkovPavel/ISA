@@ -2,14 +2,14 @@ package ru.spbpu.service;
 
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
+import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 import ru.spbpu.data.*;
 import ru.spbpu.exceptions.ApplicationException;
-import ru.spbpu.frontend.Application;
 import ru.spbpu.logic.*;
 import ru.spbpu.util.Util.RunMode;
 import ru.spbpu.logic.User.Role;
-
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -429,6 +429,46 @@ public class GUIService {
             order.update();
         } catch (ApplicationException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public Optional<String> loadStorage(File inputFile) {
+        try {
+            StorageLoader.loadData(inputFile, registry);
+            return Optional.empty();
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return Optional.ofNullable(ex.getMessage());
+        }
+    }
+
+    /**
+    return id, item info (name, amount, price), total cost, client, status
+     */
+    public Quintet<Integer, List<Triplet<String, Integer, Integer>>, Integer, String, String> getOrderDetailInfo(Integer id) {
+        try {
+            OrderAccessor accessor = (OrderAccessor) registry.getAccessor(Order.class);
+            Order order = (Order) accessor.getById(id);
+            List<Item> items = order.getItems();
+            int cost = 0;
+            for (Item i: items) {
+                cost += i.getPrice() * i.getAmount();
+            }
+            return Quintet.with(
+                    order.getId(),
+                    items.stream()
+                            .map(item -> Triplet.with(
+                                    item.getComponent().getName(),
+                                    item.getAmount(),
+                                    item.getPrice()))
+                            .collect(Collectors.toList()),
+                    cost,
+                    order.getFrom().getName(),
+                    order.getStatus().name()
+            );
+        } catch (ApplicationException ex) {
+            ex.printStackTrace();
+            return null;
         }
     }
 }

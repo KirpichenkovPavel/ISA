@@ -27,7 +27,7 @@ public class AddItemForm extends BaseApplicationForm{
 
     @Override
     Dimension getSize() {
-        return new Dimension(400, 170);
+        return new Dimension(600, 170);
     }
 
     public AddItemForm(Application app) {

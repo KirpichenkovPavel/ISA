@@ -1,6 +1,7 @@
 package ru.spbpu.frontend;
 
 import org.javatuples.Quartet;
+import ru.spbpu.service.StorageLoader;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -9,8 +10,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Optional;
 
-public class ManagerForm extends BaseApplicationForm{
+public class ManagerForm extends BaseApplicationForm {
 
     private JPanel managerForm;
     private JButton changeUserButton;
@@ -19,6 +21,7 @@ public class ManagerForm extends BaseApplicationForm{
     private JButton cancelClientOrderButton;
     private JButton acceptClientOrderButton;
     private JButton setDoneButton;
+    private JButton loadStorageButton;
     private Integer selectedClientOrderId;
 
     @Override
@@ -43,6 +46,7 @@ public class ManagerForm extends BaseApplicationForm{
         initCancelClientOrderButton();
         initAcceptClientOrderButton();
         initSetDoneButton();
+        initLoadStorageButton();
     }
 
     private void initChangeUserButton() {
@@ -143,6 +147,21 @@ public class ManagerForm extends BaseApplicationForm{
                     } else {
                         JOptionPane.showMessageDialog(null, "Operation was unsuccessful");
                     }
+                }
+            }
+        });
+    }
+
+    private void initLoadStorageButton(){
+        loadStorageButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                super.mouseClicked(mouseEvent);
+                JFileChooser fileChooser = new JFileChooser();
+                int chooseResult = fileChooser.showOpenDialog(managerForm);
+                if (chooseResult == JFileChooser.APPROVE_OPTION) {
+                    Optional<String> errorMessage = getService().loadStorage(fileChooser.getSelectedFile());
+                    errorMessage.ifPresent(s -> JOptionPane.showMessageDialog(null, s));
                 }
             }
         });

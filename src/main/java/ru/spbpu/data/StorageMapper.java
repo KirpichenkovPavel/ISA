@@ -75,7 +75,11 @@ public class StorageMapper extends BasicMapper implements StorageAccessor {
     public int updateObject(Entity object) throws ApplicationException {
         Storage storage = (Storage) object;
         for (Item i: storage.getItems()) {
-            i.update();
+            if (i.getId() != 0)
+                i.update();
+            else {
+                i.create();
+            }
         }
         return super.updateObject(object);
     }

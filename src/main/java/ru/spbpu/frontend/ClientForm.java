@@ -8,8 +8,11 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.awt.event.KeyEvent.VK_ENTER;
 
 public class ClientForm extends BaseApplicationForm{
 
@@ -31,10 +34,8 @@ public class ClientForm extends BaseApplicationForm{
     private JTable completeOrdersTable;
     private JButton acceptButton;
     private JButton rejectButton;
-    private String selectedItemName;
     private Map<String, Integer> priceMap;
-    private Integer selectedPaymentOrderId;
-    private Integer selectedCompleteOrderId;
+    private Map<String, Object> selections;
 
     @Override
     JPanel createFormPanel() {
@@ -54,6 +55,7 @@ public class ClientForm extends BaseApplicationForm{
     public ClientForm(Application app) {
         super(app);
         priceMap = getService().getStoragePrices();
+        initSelections();
         initChangeUserButton();
         initOrdersTable();
         initAddItemButton();
@@ -68,6 +70,18 @@ public class ClientForm extends BaseApplicationForm{
         initRejectButton();
         initAcceptButton();
         initTabs();
+    }
+
+    private void initSelections() {
+        selections = new HashMap<>();
+        String[] fields = {
+                "selectedListOrder",
+                "selectedCompleteOrderId",
+                "selectedPaymentOrderId",
+                "selectedItemName"
+        };
+        for (String field: fields)
+            selections.put(field, null);
     }
 
     private void initializationSwitch(int tabIndex) {
@@ -138,6 +152,41 @@ public class ClientForm extends BaseApplicationForm{
         };
         ordersTable.setModel(tableModel);
         ordersTable.setTableHeader(null);
+        initTableClickHandler(ordersTable, "selectedListOrder");
+        initEnterPressHandler(ordersTable, "selectedListOrder");
+    }
+
+    private void initTableClickHandler(JTable table, String fieldName) {
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                super.mouseClicked(mouseEvent);
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow > 0 && selectedRow < table.getRowCount()) {
+                    selections.put(fieldName, table.getValueAt(selectedRow, 0));
+                } else {
+                    selections.put(fieldName, null);
+                }
+                if (mouseEvent.getClickCount() == 2) {
+                    Object field = selections.get(fieldName);
+                    if (field instanceof Integer)
+                        getApp().openForm(new OrderDetailForm(getApp(), (Integer) field));
+                }
+            }
+        });
+    }
+
+    private void initEnterPressHandler(JTable table, String fieldName) {
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "Enter");
+        table.getActionMap().put("Enter", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if (selections.get(fieldName) != null) {
+                    System.out.println("Enter pressed with key" + selections.get(fieldName));
+                }
+            }
+        });
     }
 
     private void initAddItemButton() {
@@ -188,18 +237,7 @@ public class ClientForm extends BaseApplicationForm{
                 return null;
             }
         });
-        newOrderTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                super.mouseClicked(mouseEvent);
-                int selectedRow = newOrderTable.getSelectedRow();
-                if (selectedRow > 0 && selectedRow < newOrderTable.getRowCount()) {
-                    selectedItemName = newOrderTable.getValueAt(selectedRow, 0).toString();
-                } else {
-                    selectedItemName = null;
-                }
-            }
-        });
+        initTableClickHandler(newOrderTable, "selectedItemName");
     }
 
     private void initRemoveItemButton() {
@@ -207,9 +245,10 @@ public class ClientForm extends BaseApplicationForm{
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
+                String selectedItemName = (String) selections.get("selectedItemName");
                 if (selectedItemName != null) {
                     getService().removeComponentFromNewOrder(selectedItemName);
-                    selectedItemName = null;
+                    selections.put("selectedItemName", null);
                     initNewOrderTable();
                 }
             }
@@ -271,18 +310,7 @@ public class ClientForm extends BaseApplicationForm{
                 return null;
             }
         });
-        clientPaymentsTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                super.mouseClicked(mouseEvent);
-                int selectedRow = clientPaymentsTable.getSelectedRow();
-                if (selectedRow > 0 && selectedRow < clientPaymentsTable.getRowCount()) {
-                    selectedPaymentOrderId = (Integer) clientPaymentsTable.getValueAt(selectedRow, 0);
-                } else {
-                    selectedPaymentOrderId = null;
-                }
-            }
-        });
+        initTableClickHandler(clientPaymentsTable, "selectedPaymentOrderId");
         clientPaymentsTable.setTableHeader(null);
     }
 
@@ -291,6 +319,7 @@ public class ClientForm extends BaseApplicationForm{
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
+                Integer selectedPaymentOrderId = (Integer) selections.get("selectedPaymentOrderId");
                 if (selectedPaymentOrderId != null) {
                     getService().makePayment(selectedPaymentOrderId);
                     initClientPaymentsTable();
@@ -305,6 +334,7 @@ public class ClientForm extends BaseApplicationForm{
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
+                Integer selectedPaymentOrderId = (Integer) selections.get("selectedPaymentOrderId");
                 if (selectedPaymentOrderId != null) {
                     getService().cancelOrderByClient(selectedPaymentOrderId);
                     initClientPaymentsTable();
@@ -340,18 +370,7 @@ public class ClientForm extends BaseApplicationForm{
                 return null;
             }
         });
-        completeOrdersTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                super.mouseClicked(mouseEvent);
-                int selectedRow = completeOrdersTable.getSelectedRow();
-                if (selectedRow > 0 && selectedRow < completeOrdersTable.getRowCount()) {
-                    selectedCompleteOrderId = (Integer) completeOrdersTable.getValueAt(selectedRow, 0);
-                } else {
-                    selectedCompleteOrderId = null;
-                }
-            }
-        });
+        initTableClickHandler(completeOrdersTable, "selectedCompleteOrderId");
         completeOrdersTable.setTableHeader(null);
     }
 
@@ -360,6 +379,7 @@ public class ClientForm extends BaseApplicationForm{
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
+                Integer selectedCompleteOrderId = (Integer) selections.get("selectedCompleteOrderId");
                 if (selectedCompleteOrderId != null) {
                     getService().cancelOrderByClient(selectedCompleteOrderId);
                     initCompleteOrdersTable();
@@ -375,6 +395,7 @@ public class ClientForm extends BaseApplicationForm{
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
+                Integer selectedCompleteOrderId = (Integer) selections.get("selectedCompleteOrderId");
                 if (selectedCompleteOrderId != null) {
                     getService().acceptCompleteOrder(selectedCompleteOrderId);
                     initCompleteOrdersTable();
