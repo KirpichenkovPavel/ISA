@@ -1,18 +1,21 @@
 package ru.spbpu.frontend;
 
 import ru.spbpu.service.GUIService;
+import ru.spbpu.service.RESTService;
 import ru.spbpu.util.Util.RunMode;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.Stack;
 
 public class Application {
 
     private Stack<JFrame> frameStack;
     private GUIService service;
+    private RESTService restService;
 
     public Application() {
         frameStack = new Stack<>();
@@ -71,6 +74,9 @@ public class Application {
             public void windowClosing(WindowEvent windowEvent) {
                 super.windowClosing(windowEvent);
                 frameStack.pop();
+                if (frameStack.empty()) {
+                    stop();
+                }
             }
         });
         frame.setVisible(true);
@@ -79,6 +85,16 @@ public class Application {
     private void setUp(RunMode runMode) {
         service = new GUIService();
         service.setUp(GUIService.DataLayer.DB, runMode);
+        restService = new RESTService(service.getRegistry());
+        try {
+            restService.run(8080);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void stop() {
+        restService.stop();
     }
 
     public String getUserName() {

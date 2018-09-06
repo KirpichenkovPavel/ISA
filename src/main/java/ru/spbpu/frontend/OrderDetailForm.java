@@ -29,7 +29,7 @@ public class OrderDetailForm extends BaseApplicationForm {
 
     @Override
     Dimension getSize() {
-        return new Dimension(600, 400);
+        return new Dimension(600, 300);
     }
 
     public OrderDetailForm(Application app, Integer orderId) {
@@ -52,10 +52,13 @@ public class OrderDetailForm extends BaseApplicationForm {
             public int getRowCount() {
                 return itemInfo.size();
             }
-
             @Override
             public Object getValueAt(int i, int j) {
                 return itemInfo.get(i).getValue(j);
+            }
+            @Override
+            public boolean isCellEditable(int i, int j) {
+                return false;
             }
         });
     }

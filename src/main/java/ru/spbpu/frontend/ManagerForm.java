@@ -1,11 +1,9 @@
 package ru.spbpu.frontend;
 
 import org.javatuples.Quartet;
-import ru.spbpu.service.StorageLoader;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -62,46 +60,36 @@ public class ManagerForm extends BaseApplicationForm {
 
     private void initClientOrdersTable() {
         List<Quartet<Integer, String, String, String>> orders = getService().getAllClientOrders();
-        TableModel tableModel = new AbstractTableModel() {
+        String column_names[] = {"Order number", "Client name", "Items", "Status"};
+        clientOrdersTable.setModel(new DefaultTableModel(column_names, 4) {
             @Override
             public int getRowCount() {
-                return orders.size() + 1;
+                return orders.size();
             }
-
-            @Override
-            public int getColumnCount() {
-                return 4;
-            }
-
             @Override
             public Object getValueAt(int i, int j) {
-                if (i == 0) {
-                    switch (j) {
-                        case 0: return "Order number";
-                        case 1: return "Client name";
-                        case 2: return "Items";
-                        case 3: return "Status";
-                    }
-                    return "";
-                } else {
-                    return orders.get(i - 1).getValue(j);
-                }
+                return orders.get(i).getValue(j);
             }
-        };
-        clientOrdersTable.setModel(tableModel);
+            @Override
+            public boolean isCellEditable(int i, int j) {
+                return false;
+            }
+        });
         clientOrdersTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
                 int selectedRow = clientOrdersTable.getSelectedRow();
-                if (selectedRow > 0 && selectedRow < clientOrdersTable.getRowCount()) {
+                if (selectedRow >= 0 && selectedRow < clientOrdersTable.getRowCount()) {
                     selectedClientOrderId = (Integer) clientOrdersTable.getValueAt(selectedRow, 0);
                 } else {
                     selectedClientOrderId = null;
                 }
+                if (mouseEvent.getClickCount() == 2) {
+                    getApp().openForm(new OrderDetailForm(getApp(), selectedClientOrderId));
+                }
             }
         });
-        clientOrdersTable.setTableHeader(null);
     }
 
     private void initCancelClientOrderButton() {

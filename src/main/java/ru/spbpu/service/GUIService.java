@@ -31,6 +31,10 @@ public class GUIService {
         REPOSITORY
     }
 
+    public AccessorRegistry getRegistry() {
+        return registry;
+    }
+
     public void setUp(DataLayer dataLayer, RunMode runMode) {
         registry = new AccessorRegistry();
         switch (dataLayer) {
@@ -53,7 +57,7 @@ public class GUIService {
         }
     }
 
-    public boolean login(String userName, String password, String roleString) {
+    public boolean login(String userName, String roleString) {
         try {
             Role role;
             try {

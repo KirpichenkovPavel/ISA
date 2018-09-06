@@ -4,15 +4,12 @@ import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import ru.spbpu.service.StorageItem;
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.awt.event.KeyEvent.VK_ENTER;
 
 public class ClientForm extends BaseApplicationForm{
 
@@ -124,34 +121,21 @@ public class ClientForm extends BaseApplicationForm{
 
     private void initOrdersTable() {
         List<Triplet<Integer, String, String>> clientOrders = getService().getActiveClientOrdersList();
-        TableModel tableModel = new AbstractTableModel() {
+        String column_names[] = {"Order number", "Items", "Status"};
+        ordersTable.setModel(new DefaultTableModel(column_names, 3) {
             @Override
             public int getRowCount() {
-                return clientOrders.size() + 1;
+                return clientOrders.size();
             }
-
-            @Override
-            public int getColumnCount() {
-                return 3;
-            }
-
             @Override
             public Object getValueAt(int i, int j) {
-                if (i == 0) {
-                    switch (j) {
-                        case 0: return "Order number";
-                        case 1: return "Items";
-                        case 2: return "Status";
-                    }
-                    return "";
-                } else {
-                    Triplet<Integer, String, String> row = clientOrders.get(i - 1);
-                    return row.getValue(j);
-                }
+                return clientOrders.get(i).getValue(j);
             }
-        };
-        ordersTable.setModel(tableModel);
-        ordersTable.setTableHeader(null);
+            @Override
+            public boolean isCellEditable(int i, int j) {
+                return false;
+            }
+        });
         initTableClickHandler(ordersTable, "selectedListOrder");
         initEnterPressHandler(ordersTable, "selectedListOrder");
     }
@@ -162,7 +146,7 @@ public class ClientForm extends BaseApplicationForm{
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
                 int selectedRow = table.getSelectedRow();
-                if (selectedRow > 0 && selectedRow < table.getRowCount()) {
+                if (selectedRow >= 0 && selectedRow < table.getRowCount()) {
                     selections.put(fieldName, table.getValueAt(selectedRow, 0));
                 } else {
                     selections.put(fieldName, null);
@@ -202,29 +186,16 @@ public class ClientForm extends BaseApplicationForm{
 
     private void initNewOrderTable() {
         List<StorageItem> newOrderItems = getService().getNewOrderItems();
-        newOrderTable.setModel(new AbstractTableModel() {
+        String column_names[] = {"Name", "Amount", "Price", "Cost"};
+        newOrderTable.setModel(new DefaultTableModel(column_names, 4) {
             @Override
             public int getRowCount() {
-                return newOrderItems.size() + 1;
+                return newOrderItems.size();
             }
-
-            @Override
-            public int getColumnCount() {
-                return 4;
-            }
-
             @Override
             public Object getValueAt(int i, int j) {
-                if (i == 0) {
-                    switch (j){
-                        case 0: return "Name";
-                        case 1: return "Amount";
-                        case 2: return "Price";
-                        case 3: return "Cost";
-                    }
-                } else {
-                    String name = newOrderItems.get(i - 1).getName();
-                    int amount = newOrderItems.get(i - 1).getAmount();
+                String name = newOrderItems.get(i).getName();
+                    int amount = newOrderItems.get(i).getAmount();
                     int price = priceMap.getOrDefault(name, -1);
                     long cost = price >= 0 ? price * amount : -1;
                     switch (j) {
@@ -233,8 +204,11 @@ public class ClientForm extends BaseApplicationForm{
                         case 2: return price >= 0 ? price : "N/A";
                         case 3: return cost >= 0 ? cost : "N/A";
                     }
-                }
-                return null;
+                    return "";
+            }
+            @Override
+            public boolean isCellEditable(int i, int j) {
+                return false;
             }
         });
         initTableClickHandler(newOrderTable, "selectedItemName");
@@ -285,33 +259,22 @@ public class ClientForm extends BaseApplicationForm{
 
     private void initClientPaymentsTable() {
         List<Triplet<Integer, Integer, String>> payments = getService().getActiveClientPayments();
-        clientPaymentsTable.setModel(new AbstractTableModel() {
+        String column_names[] = {"Order number", "Amount", "Payment status"};
+        clientPaymentsTable.setModel(new DefaultTableModel(column_names, 3) {
             @Override
             public int getRowCount() {
-                return payments.size() + 1;
+                return payments.size();
             }
-
-            @Override
-            public int getColumnCount() {
-                return 3;
-            }
-
             @Override
             public Object getValueAt(int i, int j) {
-                if (i == 0) {
-                    switch (j){
-                        case 0: return "Order number";
-                        case 1: return "Amount";
-                        case 2: return "Payment status";
-                    }
-                } else {
-                    return payments.get(i - 1).getValue(j);
-                }
-                return null;
+                return payments.get(i).getValue(j);
+            }
+            @Override
+            public boolean isCellEditable(int i, int j) {
+                return false;
             }
         });
         initTableClickHandler(clientPaymentsTable, "selectedPaymentOrderId");
-        clientPaymentsTable.setTableHeader(null);
     }
 
     private void initMakePaymentButton() {
@@ -346,32 +309,22 @@ public class ClientForm extends BaseApplicationForm{
 
     private void initCompleteOrdersTable() {
         List<Pair<Integer, String>> orders = getService().getCompleteClientOrders();
-        completeOrdersTable.setModel(new AbstractTableModel() {
+        String column_names[] = {"Order number", "Items"};
+        completeOrdersTable.setModel(new DefaultTableModel(column_names, 2) {
             @Override
             public int getRowCount() {
-                return orders.size() + 1;
+                return orders.size();
             }
-
-            @Override
-            public int getColumnCount() {
-                return 2;
-            }
-
             @Override
             public Object getValueAt(int i, int j) {
-                if (i == 0) {
-                    switch (j){
-                        case 0: return "Order number";
-                        case 1: return "Items";
-                    }
-                } else {
-                    return orders.get(i - 1).getValue(j);
-                }
-                return null;
+                return orders.get(i).getValue(j);
+            }
+            @Override
+            public boolean isCellEditable(int i, int j) {
+                return false;
             }
         });
         initTableClickHandler(completeOrdersTable, "selectedCompleteOrderId");
-        completeOrdersTable.setTableHeader(null);
     }
 
     private void initRejectButton() {

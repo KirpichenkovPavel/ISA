@@ -30,9 +30,8 @@ public class LoginForm extends BaseApplicationForm {
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
                 String loginString = loginInput.getText();
-                String passwordString = new String(passwordInput.getPassword());
                 ComboBoxItem<String> selectedRole = (ComboBoxItem<String>)roleSelector.getSelectedItem();
-                if (selectedRole != null && getService().login(loginString, passwordString, selectedRole.getValue())) {
+                if (selectedRole != null && getService().login(loginString, selectedRole.getValue())) {
                     switch (selectedRole.getValue()) {
                         case "MANAGER":
                             switchToForm(new ManagerForm(getApp()));
